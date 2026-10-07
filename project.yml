@@ -1,0 +1,90 @@
+# Xcode project definition. After adding or removing files, regenerate with:
+#   xcodegen generate
+name: CourtCapital
+options:
+  bundleIdPrefix: com.germanndarian
+  deploymentTarget:
+    iOS: "18.0"
+  createIntermediateGroups: true
+  developmentLanguage: en
+  groupSortPosition: top
+
+settings:
+  base:
+    SWIFT_VERSION: "6.0"
+    MARKETING_VERSION: "1.0"
+    CURRENT_PROJECT_VERSION: "1"
+    CODE_SIGN_STYLE: Automatic
+    TARGETED_DEVICE_FAMILY: "1"
+    ENABLE_USER_SCRIPT_SANDBOXING: YES
+    SWIFT_EMIT_LOC_STRINGS: NO
+
+targets:
+  CourtCapital:
+    type: application
+    platform: iOS
+    sources:
+      - path: CourtCapital
+      - path: Shared
+    dependencies:
+      - target: CourtCapitalWidgets
+    info:
+      path: CourtCapital/Info.plist
+      properties:
+        CFBundleDisplayName: "C&C"
+        CFBundleShortVersionString: $(MARKETING_VERSION)
+        CFBundleVersion: $(CURRENT_PROJECT_VERSION)
+        UILaunchScreen:
+          UIColorName: LaunchBackground
+        UISupportedInterfaceOrientations:
+          - UIInterfaceOrientationPortrait
+        UIApplicationSupportsIndirectInputEvents: true
+        ITSAppUsesNonExemptEncryption: false
+        CFBundleURLTypes:
+          - CFBundleURLName: com.germanndarian.courtcapital
+            CFBundleURLSchemes:
+              - courtcapital
+        UIAppFonts: &fonts
+          - PlayfairDisplay-Variable.ttf
+          - PlayfairDisplay-Italic-Variable.ttf
+          - Newsreader-Variable.ttf
+          - Newsreader-Italic-Variable.ttf
+    settings:
+      base:
+        PRODUCT_NAME: CourtCapital
+        PRODUCT_BUNDLE_IDENTIFIER: com.germanndarian.courtcapital
+        ASSETCATALOG_COMPILER_APPICON_NAME: AppIcon
+        ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME: AccentColor
+
+  CourtCapitalWidgets:
+    type: app-extension
+    platform: iOS
+    sources:
+      - path: CourtCapitalWidgets
+      - path: Shared
+    info:
+      path: CourtCapitalWidgets/Info.plist
+      properties:
+        CFBundleDisplayName: "Court & Capital"
+        CFBundleShortVersionString: $(MARKETING_VERSION)
+        CFBundleVersion: $(CURRENT_PROJECT_VERSION)
+        NSExtension:
+          NSExtensionPointIdentifier: com.apple.widgetkit-extension
+        UIAppFonts: *fonts
+    settings:
+      base:
+        PRODUCT_NAME: CourtCapitalWidgets
+        PRODUCT_BUNDLE_IDENTIFIER: com.germanndarian.courtcapital.widgets
+        SKIP_INSTALL: YES
+    dependencies:
+      - sdk: WidgetKit.framework
+      - sdk: SwiftUI.framework
+
+schemes:
+  CourtCapital:
+    build:
+      targets:
+        CourtCapital: all
+        CourtCapitalWidgets: all
+    run:
+      config: Debug

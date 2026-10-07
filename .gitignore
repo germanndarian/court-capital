@@ -2,3 +2,9 @@
 .env
 .env*.local
 node_modules/
+
+# Xcode
+xcuserdata/
+DerivedData/
+build/
+*.xcscmblueprint
