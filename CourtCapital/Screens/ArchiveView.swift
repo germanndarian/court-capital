@@ -2,47 +2,108 @@ import SwiftUI
 
 struct ArchiveView: View {
     @Environment(AppModel.self) private var model
-    @State private var selectedMonth: Int?
+    @Environment(EditionStore.self) private var store
+    @State private var selectedMonth: String?
 
     var body: some View {
-        let archive = model.archive
-        let month = archive.months.first { $0.month == selectedMonth } ?? archive.months.last!
-        ScrollView {
-            VStack(alignment: .leading, spacing: 0) {
-                ScreenHeading(kicker: "Bound volumes", title: "The Archive")
-                Text("Volume \(Roman.numeral(archive.volume)), \(Roman.numeral(month.year)) · \(EditionFormat.spelled(archive.editionCount)) editions")
-                    .typeStyle(.text(14, italic: true, relativeTo: .subheadline))
-                    .foregroundStyle(Theme.inkMuted)
-                    .padding(.top, 6)
+        let archive = Archive(items: store.archiveItems)
+        Group {
+            if let latestMonth = archive.shelf.last {
+                let month = archive.shelf.first { $0.id == selectedMonth } ?? latestMonth
+                ScrollView {
+                    VStack(alignment: .leading, spacing: 0) {
+                        ScreenHeading(kicker: "Bound volumes", title: "The Archive")
+                        Text(summary(archive, month: month))
+                            .typeStyle(.text(14, italic: true, relativeTo: .subheadline))
+                            .foregroundStyle(Theme.inkMuted)
+                            .padding(.top, 6)
 
-                Bookshelf(months: archive.months, selected: month.month) { picked in
-                    withAnimation(.easeOut(duration: 0.25)) { selectedMonth = picked }
+                        Bookshelf(months: archive.shelf, selected: month.id) { picked in
+                            withAnimation(.easeOut(duration: 0.25)) { selectedMonth = picked }
+                        }
+                        .padding(.top, 20)
+
+                        HStack(alignment: .firstTextBaseline) {
+                            Text("\(EditionFormat.month(month.firstDay)) \(Roman.numeral(month.year))")
+                                .typeStyle(.display(24, italic: true, relativeTo: .title2))
+                                .foregroundStyle(Theme.ink)
+                                .accessibilityAddTraits(.isHeader)
+                            Spacer()
+                            Text("\(month.items.count) \(month.items.count == 1 ? "edition" : "editions")")
+                                .typeStyle(.text(12.5, italic: true, relativeTo: .caption))
+                                .foregroundStyle(Theme.inkMuted)
+                        }
+                        .padding(.top, 26)
+
+                        DoubleRule()
+                            .padding(.top, 8)
+                        Ledger(entries: month.items, latestDate: store.latest?.date) { item in
+                            if item.editionDate == store.latest?.date {
+                                model.showToday()
+                            } else {
+                                model.archivePath.append(.edition(item.editionDate))
+                            }
+                        }
+                    }
+                    .padding(.horizontal, 24)
+                    .padding(.top, 14)
+                    .padding(.bottom, 36)
                 }
-                .padding(.top, 20)
-
-                HStack(alignment: .firstTextBaseline) {
-                    Text("\(EditionFormat.month(month.firstDay)) \(Roman.numeral(month.year))")
-                        .typeStyle(.display(24, italic: true, relativeTo: .title2))
-                        .foregroundStyle(Theme.ink)
-                        .accessibilityAddTraits(.isHeader)
-                    Spacer()
-                    Text("\(month.entries.count) \(month.entries.count == 1 ? "edition" : "editions")")
-                        .typeStyle(.text(12.5, italic: true, relativeTo: .caption))
-                        .foregroundStyle(Theme.inkMuted)
+                .scrollIndicators(.hidden)
+            } else {
+                ScrollView {
+                    NoticeView(title: "The shelf is empty", message: store.refreshProblem ?? "Past editions appear here once they’re published.")
+                        .containerRelativeFrame(.vertical)
                 }
-                .padding(.top, 26)
-
-                DoubleRule()
-                    .padding(.top, 8)
-                Ledger(entries: month.entries.reversed()) { model.showToday() }
             }
-            .padding(.horizontal, 24)
-            .padding(.top, 14)
-            .padding(.bottom, 36)
         }
-        .scrollIndicators(.hidden)
+        .refreshable { await store.refresh() }
         .paperScreen()
         .sensoryFeedback(.selection, trigger: selectedMonth)
+    }
+
+    /// "Volume I, MMXXVI · two hundred editions"
+    private func summary(_ archive: Archive, month: ArchiveMonth) -> String {
+        let volume = max(month.year - 2025, 1)
+        let count = archive.editionCount
+        return "Volume \(Roman.numeral(volume)), \(Roman.numeral(month.year)) · \(EditionFormat.spelled(count)) \(count == 1 ? "edition" : "editions")"
+    }
+}
+
+/// An earlier edition, opened from the ledger.
+struct ArchivedEditionView: View {
+    let date: String
+    @Environment(AppModel.self) private var model
+    @Environment(EditionStore.self) private var store
+    @State private var edition: Edition?
+    @State private var failed = false
+
+    var body: some View {
+        VStack(spacing: 0) {
+            StoryTopBar(backTitle: "Archive", editionNumber: edition?.number ?? 0) {
+                model.archivePath.removeLast()
+            }
+            .padding(.horizontal, 24)
+            if let edition {
+                EditionPage(edition: edition, isToday: false) { id in
+                    model.archivePath.append(.story(StoryRoute(editionDate: edition.date, storyID: id)))
+                }
+            } else if failed {
+                NoticeView(title: "Edition unavailable", message: "It isn’t saved on this iPhone, and the newsroom couldn’t be reached.")
+            } else {
+                NoticeView(title: "Fetching the edition", message: nil, showsProgress: true)
+            }
+        }
+        .paperScreen()
+        .toolbar(.hidden, for: .navigationBar)
+        .task {
+            do {
+                edition = try await store.edition(on: date)
+                failed = edition == nil
+            } catch {
+                failed = true
+            }
+        }
     }
 }
 
@@ -51,8 +112,8 @@ struct ArchiveView: View {
 /// A wooden shelf of leather-bound months. The chosen month is pulled up 14 pt.
 private struct Bookshelf: View {
     let months: [ArchiveMonth]
-    let selected: Int
-    let pick: (Int) -> Void
+    let selected: ArchiveMonth.ID
+    let pick: (ArchiveMonth.ID) -> Void
 
     private static let heights: [CGFloat] = [150, 142, 154, 146, 150, 140, 152, 148, 144, 156, 150, 146]
 
@@ -66,13 +127,13 @@ private struct Bookshelf: View {
                         numeral: Roman.numeral(month.month),
                         leather: Theme.Leather.all[index % Theme.Leather.all.count],
                         height: Self.heights[index % Self.heights.count],
-                        isSelected: month.month == selected
+                        isSelected: month.id == selected
                     )
-                    .onTapGesture { pick(month.month) }
+                    .onTapGesture { pick(month.id) }
                     .accessibilityElement()
                     .accessibilityLabel(EditionFormat.month(month.firstDay))
-                    .accessibilityAddTraits(month.month == selected ? [.isButton, .isSelected] : .isButton)
-                    .accessibilityAction { pick(month.month) }
+                    .accessibilityAddTraits(month.id == selected ? [.isButton, .isSelected] : .isButton)
+                    .accessibilityAction { pick(month.id) }
                 }
             }
             .frame(height: 166, alignment: .bottom)
@@ -167,8 +228,9 @@ private struct GiltBand: View {
 
 /// The month's editions in a ruled ledger with a burgundy double margin.
 private struct Ledger: View {
-    let entries: [ArchiveEntry]
-    let openCurrent: () -> Void
+    let entries: [ArchiveItem]
+    let latestDate: String?
+    let open: (ArchiveItem) -> Void
     var columns = LedgerColumns()
 
     var body: some View {
@@ -195,20 +257,16 @@ private struct Ledger: View {
             .accessibilityHidden(true)
 
             ForEach(entries) { entry in
-                if entry.isCurrent {
-                    Button(action: openCurrent) { LedgerRow(entry: entry) }
-                        .buttonStyle(PressedRowStyle())
-                        .accessibilityHint("Returns to today’s edition")
-                } else {
-                    LedgerRow(entry: entry)
-                }
+                Button { open(entry) } label: { LedgerRow(entry: entry) }
+                    .buttonStyle(PressedRowStyle())
+                    .accessibilityHint(entry.editionDate == latestDate ? "Returns to today’s edition" : "Opens this edition")
             }
         }
     }
 }
 
 private struct LedgerRow: View {
-    let entry: ArchiveEntry
+    let entry: ArchiveItem
     var columns = LedgerColumns()
 
     var body: some View {
@@ -223,25 +281,25 @@ private struct LedgerRow: View {
                 .frame(maxHeight: .infinity, alignment: .top)
                 .overlay(alignment: .trailing) { LedgerMargin() }
             VStack(alignment: .leading, spacing: 2) {
-                Text(EditionFormat.weekdayAbbreviation(entry.date))
+                Text(EditionFormat.weekdayAbbreviation(entry.day))
                     .typeStyle(.label(8.5, tracking: 0.18))
                     .foregroundStyle(Theme.inkMuted)
                     .lineLimit(1)
                     .minimumScaleFactor(0.6)
-                Text("\(EditionCalendar.calendar.component(.day, from: entry.date))")
+                Text("\(EditionCalendar.calendar.component(.day, from: entry.day))")
                     .typeStyle(.display(20, lineHeight: 1, relativeTo: .title3))
                     .foregroundStyle(Theme.ink)
             }
             .padding(EdgeInsets(top: 10, leading: 10, bottom: 10, trailing: 0))
             .frame(width: columns.date, alignment: .leading)
-            Text(entry.headline)
+            Text(entry.bigStory)
                 .typeStyle(.text(14.5, lineHeight: 1.32, relativeTo: .subheadline))
                 .foregroundStyle(Theme.ink)
                 .lineLimit(2)
                 .multilineTextAlignment(.leading)
                 .padding(EdgeInsets(top: 11, leading: 4, bottom: 11, trailing: 6))
                 .frame(maxWidth: .infinity, alignment: .leading)
-            Text("\(entry.readMinutes)")
+            Text(entry.readingMinutes.map(String.init) ?? "–")
                 .typeStyle(TypeStyle(face: .newsreader, size: 12.5, tabularFigures: true, relativeTo: .caption))
                 .foregroundStyle(Theme.inkMuted)
                 .padding(.vertical, 13)
@@ -251,7 +309,7 @@ private struct LedgerRow: View {
         .contentShape(Rectangle())
         .overlay(alignment: .bottom) { Hairline() }
         .accessibilityElement(children: .ignore)
-        .accessibilityLabel("Number \(entry.number), \(EditionFormat.storyDate(entry.date)). \(entry.headline). \(entry.readMinutes) minutes.")
+        .accessibilityLabel("Number \(entry.number), \(EditionFormat.storyDate(entry.day)). \(entry.bigStory).")
     }
 }
 

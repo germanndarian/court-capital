@@ -6,7 +6,8 @@ enum Preferences {
     static let morningNotification = "morningNotification"
     static let deliveryMinutes = "deliveryMinutes"
 
-    static let defaultDeliveryMinutes = EditionCalendar.deliveryHour * 60 + EditionCalendar.deliveryMinute
+    /// 05:05: five minutes after the edition is due.
+    static let defaultDeliveryMinutes = 5 * 60 + 5
 }
 
 enum Appearance: String, CaseIterable, Identifiable {

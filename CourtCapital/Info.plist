@@ -2,6 +2,10 @@
 <!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
 <plist version="1.0">
 <dict>
+	<key>BGTaskSchedulerPermittedIdentifiers</key>
+	<array>
+		<string>com.germanndarian.courtcapital.refresh</string>
+	</array>
 	<key>CFBundleDevelopmentRegion</key>
 	<string>$(DEVELOPMENT_LANGUAGE)</string>
 	<key>CFBundleDisplayName</key>
@@ -33,6 +37,10 @@
 	<string>$(CURRENT_PROJECT_VERSION)</string>
 	<key>ITSAppUsesNonExemptEncryption</key>
 	<false/>
+	<key>SUPABASE_HOST</key>
+	<string>$(SUPABASE_HOST)</string>
+	<key>SUPABASE_PUBLISHABLE_KEY</key>
+	<string>$(SUPABASE_PUBLISHABLE_KEY)</string>
 	<key>UIAppFonts</key>
 	<array>
 		<string>PlayfairDisplay-Variable.ttf</string>
@@ -42,6 +50,10 @@
 	</array>
 	<key>UIApplicationSupportsIndirectInputEvents</key>
 	<true/>
+	<key>UIBackgroundModes</key>
+	<array>
+		<string>fetch</string>
+	</array>
 	<key>UILaunchScreen</key>
 	<dict>
 		<key>UIColorName</key>

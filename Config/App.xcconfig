@@ -1,0 +1,8 @@
+// Build settings shared by the app and the widgets.
+// Your own values live in Secrets.xcconfig, which is not committed. To set it up, copy
+// Secrets.example.xcconfig to Secrets.xcconfig and fill it in.
+
+SUPABASE_HOST =
+SUPABASE_PUBLISHABLE_KEY =
+
+#include? "Secrets.xcconfig"
