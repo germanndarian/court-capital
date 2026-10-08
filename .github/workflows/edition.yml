@@ -1,0 +1,62 @@
+name: Morning edition
+
+# GitHub's cron runs in UTC and can start late when GitHub is busy. Two runs every weekday
+# cover summer and winter time: 02:15 UTC is 04:15 in Zürich in summer (CEST) and 03:15 in
+# winter (CET); 03:15 UTC is 05:15 in summer and 04:15 in winter. Whichever runs first
+# writes the edition; the other sees it exists and stops, or retries if the first failed.
+on:
+  schedule:
+    - cron: "15 2 * * 1-5"
+    - cron: "15 3 * * 1-5"
+  workflow_dispatch:
+    inputs:
+      dry_run:
+        description: "Dry run: generate and attach the edition to the run, but don't publish"
+        type: boolean
+        default: true
+      force:
+        description: "Replace today's edition if it already exists"
+        type: boolean
+        default: false
+
+concurrency:
+  group: morning-edition
+  cancel-in-progress: false
+
+permissions:
+  contents: read
+
+jobs:
+  generate:
+    runs-on: ubuntu-latest
+    timeout-minutes: 45
+    defaults:
+      run:
+        working-directory: pipeline
+    steps:
+      - uses: actions/checkout@v5
+
+      - uses: actions/setup-node@v5
+        with:
+          node-version: 24
+          cache: npm
+          cache-dependency-path: pipeline/package-lock.json
+
+      - run: npm ci
+
+      - name: Write the edition
+        run: npm run generate -- ${{ inputs.dry_run && '--dry-run' || '' }} ${{ inputs.force && '--force' || '' }}
+        env:
+          TRIGGER: ${{ github.event_name }}
+          ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
+          SUPABASE_URL: https://oxmdqzlxcsqgktqvnxrl.supabase.co
+          SUPABASE_SECRET_KEY: ${{ secrets.SUPABASE_SECRET_KEY }}
+
+      - name: Attach the edition to this run
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: edition
+          path: pipeline/out/
+          if-no-files-found: ignore
+          retention-days: 14

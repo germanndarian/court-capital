@@ -1,0 +1,31 @@
+name: Pipeline checks
+
+on:
+  pull_request:
+    paths:
+      - "pipeline/**"
+      - "prompts/**"
+      - "supabase/**"
+      - ".github/workflows/**"
+
+permissions:
+  contents: read
+
+jobs:
+  check:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: pipeline
+    steps:
+      - uses: actions/checkout@v5
+      - uses: actions/setup-node@v5
+        with:
+          node-version: 24
+          cache: npm
+          cache-dependency-path: pipeline/package-lock.json
+      - run: npm ci
+      - run: npm run typecheck
+      - run: npm test
+      - name: Seed SQL is up to date
+        run: npm run seeds && git diff --exit-code ../supabase/
