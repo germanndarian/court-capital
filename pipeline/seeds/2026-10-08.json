@@ -1,0 +1,266 @@
+{
+  "date": "2026-10-08",
+  "generated_at": "2026-10-08T03:15:00Z",
+  "model": "seed: Cowork edition from Notion",
+  "markets": {
+    "asOf": "2026-10-07",
+    "quotes": [
+      { "name": "S&P 500", "level": 7801.77, "change": -0.22, "change_unit": "percent", "unit": "index" },
+      { "name": "Nasdaq", "level": 27538.69, "change": -0.22, "change_unit": "percent", "unit": "index" },
+      { "name": "SMI", "level": 13808.42, "change": 0.14, "change_unit": "percent", "unit": "index" },
+      { "name": "US 10Y", "level": 5.277, "change": 0.8, "change_unit": "bp", "unit": "yield" },
+      { "name": "USD/CHF", "level": 0.8322, "change": 0.13, "change_unit": "percent", "unit": "fx" },
+      { "name": "Brent", "level": 100.2, "change": -0.38, "change_unit": "percent", "unit": "usd" }
+    ],
+    "missing": []
+  },
+  "draft": {
+    "big_story": {
+      "text": "Fed minutes show every official backed September's rate hike and most expect another before year-end, as the 30-year US Treasury yield hit its highest level since 2002.",
+      "story_id": "fed-minutes"
+    },
+    "markets": null,
+    "sections": [
+      {
+        "key": "corporate_law",
+        "stories": [
+          {
+            "id": "sec-climate-investors",
+            "headline": "SEC won't charge BlackRock, Vanguard, State Street over Exxon climate push, but warns big investors",
+            "region": "US",
+            "whos_who": [
+              { "name": "SEC", "description": "US stock-market regulator" },
+              { "name": "BlackRock, Vanguard, State Street", "description": "world's three biggest fund managers" },
+              { "name": "Climate Action 100+", "description": "investor alliance pressing companies on climate" },
+              { "name": "Engine No. 1", "description": "activist fund that won Exxon board seats" },
+              { "name": "ExxonMobil", "description": "largest US oil company" }
+            ],
+            "body": "On Wednesday the SEC closed its probe into the three firms' work with Climate Action 100+ without charges, but published a rare \"report of investigation\" *(a public write-up explaining how the SEC reads the law, without punishing anyone)*. It centres on Exxon's 2021 annual meeting, when the three backed dissident directors put forward by Engine No. 1. The report says joining a group that works to elect dissident directors could cost a big investor its \"passive\" status and the lighter, cheaper ownership-reporting forms that come with it. Corporation Finance director Jim Moloney said shareholders still \"have the right to express their views on a particular topic.\"",
+            "why_it_matters": "The index giants own big stakes in almost every US company; the threat of activist-style filing duties will make them even more cautious about teaming up to push boards on climate or other issues.",
+            "plain_words": [
+              "The three biggest money managers helped climate activists win seats on Exxon's board in 2021.",
+              "The regulator won't punish them, but warns: if you team up to change a company's board, you must report like an activist, with more paperwork and rules.",
+              "That will probably make them push companies less."
+            ],
+            "sources": [
+              { "outlet": "Reuters via Investing.com", "url": "https://www.investing.com/news/stock-market-news/us-sec-will-not-pursue-charges-against-climate-group-warns-of-disclosure-obligations-4937029" },
+              { "outlet": "Law360", "url": "https://www.law360.com/securities/articles/2535128" },
+              { "outlet": "Bloomberg", "url": "https://www.bloomberg.com/news/articles/2026-10-07/sec-warns-activist-investors-after-climate-push-at-exxon-mobil" }
+            ]
+          },
+          {
+            "id": "robinhood-ipo",
+            "headline": "US government urges Supreme Court to hear Robinhood's fight over its 2021 IPO disclosures",
+            "region": "US",
+            "whos_who": [
+              { "name": "Robinhood", "description": "US app for trading stocks and crypto" },
+              { "name": "Solicitor General", "description": "US government's lawyer at the Supreme Court" },
+              { "name": "9th Circuit", "description": "federal appeals court for the western US" },
+              { "name": "Section 11", "description": "law letting IPO buyers sue over misleading prospectuses" }
+            ],
+            "body": "In a brief filed Wednesday, which the Court had invited in June, the Trump administration backed Robinhood's petition in *Robinhood Markets v. Sodha*. Investors who bought in Robinhood's July 2021 IPO say it hid that meme-stock and crypto trading was already slowing before the listing; a district judge dismissed the case in 2024, but the 9th Circuit revived it in 2025. The government says the 9th Circuit wrongly \"collapsed\" two separate elements of an omissions claim. The key question is whether leaving out intra-quarter data *(figures from a quarter that is not yet finished)* can make an IPO prospectus misleading.",
+            "why_it_matters": "The government's view carries heavy weight when the justices pick cases; a ruling would set how much up-to-the-minute business information companies must put in IPO documents, and how easily investors can sue afterwards.",
+            "plain_words": [
+              "People who bought Robinhood shares at its IPO say the company knew business was already slowing and kept quiet.",
+              "A lower court let them sue, and now the US government is asking the Supreme Court to step in.",
+              "That could change how easily investors can sue companies after they go public."
+            ],
+            "sources": [
+              { "outlet": "Law360", "url": "https://www.law360.com/securities/articles/2535397" },
+              { "outlet": "TS2", "url": "https://ts2.tech/en/robinhood-ipo-suit-goes-to-supreme-court-company-disclosure-rules-on-the-line/" },
+              { "outlet": "Supreme Court docket", "url": "https://www.supremecourt.gov/DocketPDF/25/25-944/395566/20260205151117691_PETITION%20FOR%20A%20WRIT%20OF%20CERTIORARI.pdf" }
+            ]
+          },
+          {
+            "id": "kalshi-states",
+            "headline": "39 states and D.C. urge Supreme Court to let states regulate Kalshi's sports prediction markets",
+            "region": "US",
+            "whos_who": [
+              { "name": "Kalshi", "description": "US platform for trading bets on real-world events" },
+              { "name": "CFTC", "description": "US regulator for futures and derivatives" },
+              { "name": "New Jersey", "description": "state fighting Kalshi at the Supreme Court" },
+              { "name": "Ohio", "description": "first-named state in the coalition" }
+            ],
+            "body": "Ohio, 38 other states and Washington, D.C. filed an amicus brief *(a \"friend of the court\" filing by someone not party to the case)* on Wednesday supporting New Jersey's petition in *Flaherty v. KalshiEX*. In April the 3rd Circuit ruled that Kalshi's sports contracts are swaps and that federal commodities law preempts *(overrides)* New Jersey's gambling laws; the 6th and 9th Circuits have since ruled the opposite way. The states say \"the circuits are fractured\" and warn that age limits, exclusion lists and spending caps become unenforceable if the industry wins. Kalshi's response is due 9 November.",
+            "why_it_matters": "A Supreme Court ruling would decide whether a fast-growing, multi-billion-dollar betting industry answers to one federal regulator or to 50 state gambling regulators.",
+            "plain_words": [
+              "Kalshi lets people bet on sports by calling the bets financial contracts, which it says only Washington can regulate.",
+              "Most US states disagree and want the Supreme Court to say gambling rules are their job.",
+              "Courts have split, so the top court will likely have to decide."
+            ],
+            "sources": [
+              { "outlet": "Law360", "url": "https://www.law360.com/securities/articles/2535363" },
+              { "outlet": "The Crypto Times", "url": "https://www.cryptotimes.io/2026/10/08/39-states-urge-supreme-court-to-review-kalshi-sports-betting-dispute/" },
+              { "outlet": "CDC Gaming", "url": "https://cdcgaming.com/brief/tribe-39-state-attorneys-general-latest-to-ask-supreme-court-to-hear-prediction-markets-case/" }
+            ]
+          }
+        ]
+      },
+      {
+        "key": "finance",
+        "stories": [
+          {
+            "id": "fed-minutes",
+            "headline": "Fed minutes: all officials backed September's rate hike, and most expect another by year-end",
+            "region": "US",
+            "whos_who": [
+              { "name": "Fed", "description": "US central bank, sets interest rates" },
+              { "name": "FOMC", "description": "Fed committee that votes on rates" },
+              { "name": "Federal funds rate", "description": "Fed's key short-term interest rate" }
+            ],
+            "body": "Minutes of the 15–16 September meeting, released Wednesday, confirm the FOMC voted 12–0 to raise rates by a quarter point to 3.75%–4%, the first hike since 2023, with every participant in support. Most judged that another increase \"would likely be appropriate by year end,\" citing inflation still well above the 2% goal, energy prices driven up by the Middle East conflict, and price pressure from the AI investment boom. Officials said labour-market risks had \"diminished and were now broadly balanced.\" Traders put the odds of a hike at the 27–28 October meeting at only about 17–20%, so December is the likelier date.",
+            "why_it_matters": "The Fed is in hiking mode, not cutting mode: borrowing stays expensive for companies, home buyers and the US government, which supports the dollar against the franc.",
+            "plain_words": [
+              "The US central bank raised interest rates last month to fight rising prices, and all its top people agreed.",
+              "Most think one more rise is coming before New Year.",
+              "That makes loans more expensive for everyone, from families to big companies."
+            ],
+            "sources": [
+              { "outlet": "Bloomberg", "url": "https://www.bloomberg.com/news/articles/2026-10-07/fed-minutes-show-hawkish-unity-behind-september-rate-hike" },
+              { "outlet": "CNBC", "url": "https://www.cnbc.com/2026/10/07/fed-officials-see-another-hike-coming-but-no-sign-as-to-when-minutes-show.html" },
+              { "outlet": "Scripps / NBC26", "url": "https://www.nbc26.com/politics/economy/fed-minutes-show-most-officials-expected-another-rate-hike-before-years-end" }
+            ]
+          },
+          {
+            "id": "treasury-yields",
+            "headline": "Wall Street slips from records as 30-year Treasury yield hits highest level since 2002",
+            "region": "US",
+            "whos_who": [
+              { "name": "S&P 500", "description": "index of 500 biggest US companies" },
+              { "name": "Dow", "description": "30 big US blue-chip stocks" },
+              { "name": "US Treasuries", "description": "loans to the US government" },
+              { "name": "Caterpillar", "description": "maker of construction and mining machines" },
+              { "name": "Constellation Brands", "description": "US beer and wine company (Corona, Modelo)" }
+            ],
+            "body": "The S&P 500 and Nasdaq each fell 0.22% and the Dow 0.66% a day after record closes, while the small-cap Russell 2000 lost 1.31%. The 30-year Treasury yield closed at 5.66% after touching 5.73% and the 10-year reached 5.36%, both the highest since 2002, while Brent crude traded near $102 after Houthi attacks on Saudi airports and a Gulf of Mexico storm. Caterpillar fell 5.7% on a downgrade, causing most of the Dow's drop, and Constellation Brands slid about 5% despite beating forecasts, as sales in shops and supermarkets declined.",
+            "why_it_matters": "Long-term US borrowing costs at 24-year highs push up mortgage and corporate loan rates and make bonds a stronger rival to richly priced stocks.",
+            "plain_words": [
+              "Stocks dipped a little after hitting record highs.",
+              "The bigger news: the US government now pays its highest interest rate in over 20 years to borrow money for 30 years.",
+              "When that rate rises, loans for houses and companies get more expensive too."
+            ],
+            "sources": [
+              { "outlet": "TheStreet", "url": "https://www.thestreet.com/stock-market-today/stock-market-today-dow-jones-sp-500-nasdaq-updates-oct-07-2026" },
+              { "outlet": "Yahoo Finance", "url": "https://finance.yahoo.com/markets/live/stock-market-today-wednesday-october-7-dow-sp-500-nasdaq-080241833.html" }
+            ]
+          },
+          {
+            "id": "ai-chip-debt",
+            "headline": "AI chip debt binge: SpaceX seeks $40B for Nvidia chips, Broadcom over $50B for OpenAI's",
+            "region": "US",
+            "whos_who": [
+              { "name": "SpaceX", "description": "Musk's rocket company, listed since June" },
+              { "name": "Nvidia", "description": "biggest AI chipmaker" },
+              { "name": "Broadcom", "description": "US chipmaker building custom chips for OpenAI" },
+              { "name": "Oracle", "description": "US database and cloud company" },
+              { "name": "Apollo", "description": "big US investment and private-credit firm" }
+            ],
+            "body": "SpaceX is seeking about $40B — roughly $10B of bank loans and $30B of investment-grade debt *(bonds from borrowers rated safe)* — in a deal led by Apollo to buy Nvidia chips, the FT reported; its shares fell 1.7% on Wednesday. The WSJ added that Broadcom is arranging more than $50B of private credit *(loans from investment funds rather than banks)* with Apollo and Blackstone for OpenAI's custom-chip programme, and that Oracle is talking to Apollo and Goldman Sachs about a vehicle that buys chips and leases them back to it. None of the deals is final yet.",
+            "why_it_matters": "The AI build-out is increasingly financed with borrowed money, much of it from private-credit funds and off-balance-sheet structures, which raises the question of who carries the losses if AI demand cools.",
+            "plain_words": [
+              "AI chips are so expensive that even giant companies are borrowing tens of billions to buy them.",
+              "The lenders get paid back over years from the AI business.",
+              "If that business slows down, both sides could get hurt."
+            ],
+            "sources": [
+              { "outlet": "Reuters via The Star", "url": "https://www.thestar.com.my/tech/tech-news/2026/10/07/spacex-seeks-40-billion-to-buy-nvidia-chips-ft-reports" },
+              { "outlet": "WSJ via Investing.com", "url": "https://www.investing.com/news/stock-market-news/broadcom-oracle-and-spacex-pursue-blockbuster-debt-deals-amid-ai-buildout--wsj-4937581" },
+              { "outlet": "TheStreet", "url": "https://www.thestreet.com/stock-market-today/stock-market-today-dow-jones-sp-500-nasdaq-updates-oct-07-2026" }
+            ]
+          },
+          {
+            "id": "samsung-profit",
+            "headline": "Samsung guides to record ~$80B quarterly profit as AI memory-chip demand soars",
+            "region": "ASIA",
+            "whos_who": [
+              { "name": "Samsung Electronics", "description": "South Korean maker of chips and phones" },
+              { "name": "HBM", "description": "high-bandwidth memory, a key AI chip" },
+              { "name": "DRAM", "description": "main type of computer working memory" }
+            ],
+            "body": "Samsung's preliminary third-quarter figures show operating profit of about 107.4 trillion won (around $80B), up roughly 780% from a year earlier, on sales of about 195 trillion won, up about 127%. The jump comes from soaring demand and prices for memory chips used in AI data centres, including its new HBM4. Full results follow later this month.",
+            "why_it_matters": "It confirms that the AI spending wave is now pouring into memory makers, not just Nvidia, and is one of the largest quarterly profits any company has reported.",
+            "plain_words": [
+              "Samsung makes the memory chips that AI computers need, and right now everyone wants them.",
+              "Prices shot up, so Samsung earned almost nine times more in three months than a year ago.",
+              "It shows how much money is flowing into AI."
+            ],
+            "sources": [
+              { "outlet": "CNBC", "url": "https://www.cnbc.com/2026/10/08/samsung-q3-earnings.html" },
+              { "outlet": "Sammy Fans", "url": "https://www.sammyfans.com/2026/10/07/samsung-q3-2026-profit-ai-chip-demand/" },
+              { "outlet": "Bloomberg", "url": "https://www.bloomberg.com/news/articles/2026-10-07/samsung-reaches-new-profit-record-with-memory-chip-windfall" }
+            ]
+          },
+          {
+            "id": "smi-pharma",
+            "headline": "SMI edges up as Novartis and Roche offset slides in UBS and Julius Bär",
+            "region": "CH",
+            "whos_who": [
+              { "name": "SMI", "description": "index of the 20 biggest Swiss companies" },
+              { "name": "Novartis, Roche", "description": "Basel pharma giants" },
+              { "name": "UBS", "description": "Switzerland's biggest bank" },
+              { "name": "Julius Bär", "description": "Zürich private bank for wealthy clients" },
+              { "name": "ABB, Holcim", "description": "Swiss engineering and building-materials groups" }
+            ],
+            "body": "The SMI rose 0.14% to 13,808.42 in a directionless session weighed down by high bond yields and oil prices. Novartis (+2.4%) and Roche carried the index, while Julius Bär fell 3.9% despite a recently closed FINMA probe and a buyback, UBS lost 3.1% to CHF 39.33 in line with weaker European banks, and ABB and Holcim each dropped 3.3%. The broader SPI slipped 0.04%, and USD/CHF closed around 0.8329, up about 0.14%.",
+            "why_it_matters": "Defensive pharma stocks are holding up the Swiss market while banks and cyclical industrials suffer from the global rise in bond yields and oil prices.",
+            "plain_words": [
+              "Swiss shares ended almost flat.",
+              "Medicine makers went up, banks and industrial firms went down.",
+              "Investors were nervous about high interest rates and oil, so they bought steady companies and sold riskier ones."
+            ],
+            "sources": [
+              { "outlet": "finanzen.ch", "url": "https://www.finanzen.ch/nachrichten/aktien/aktien-schweiz-schluss-smi-von-hohen-anleihenrenditen-und-oelpreisen-belastet-1036605761" },
+              { "outlet": "cash.ch", "url": "https://www.cash.ch/news/aktien-schweiz-schluss-smi-von-hohen-anleihenrenditen-und-olpreisen-belastet-974926" },
+              { "outlet": "Pound Sterling Live", "url": "https://www.poundsterlinglive.com/history/USD-CHF-2026" }
+            ]
+          }
+        ]
+      },
+      {
+        "key": "ai",
+        "stories": [
+          {
+            "id": "gpt-6-sol-luna",
+            "headline": "OpenAI puts GPT-6 Sol and Luna into ChatGPT for all users, with interactive \"Intelligent UI\"",
+            "region": "US",
+            "whos_who": [
+              { "name": "OpenAI", "description": "maker of ChatGPT" },
+              { "name": "GPT-6 Sol / Luna", "description": "OpenAI's new everyday ChatGPT models" }
+            ],
+            "body": "The October models replace GPT-5.6 Sol and Luna for free and paid users worldwide and add \"Intelligent UI\", which puts tappable buttons, editable charts, calculators and diagrams inside answers — paid tiers from Wednesday, Free and Go users from Thursday. OpenAI's safety report rates both as \"High\" capability in cybersecurity and biology/chemistry.",
+            "why_it_matters": null,
+            "plain_words": [
+              "ChatGPT got a new brain and a new look.",
+              "Instead of only text, answers can now include charts you can change, buttons and little calculators.",
+              "Everyone, including free users, gets it this week."
+            ],
+            "sources": [
+              { "outlet": "OpenAI Deployment Safety Hub", "url": "https://deploymentsafety.openai.com/gpt-6-october/respecting-warnings" },
+              { "outlet": "TechCrunch", "url": "https://techcrunch.com/2026/10/07/chatgpt-is-getting-a-lot-more-visual-with-the-launch-of-a-new-interface/" }
+            ]
+          },
+          {
+            "id": "chatgpt-teens",
+            "headline": "Common Sense Media rates ChatGPT for Teens an \"unacceptable risk\"; OpenAI disputes the tests",
+            "region": "US",
+            "whos_who": [
+              { "name": "Common Sense Media", "description": "US nonprofit rating media and tech for kids" },
+              { "name": "ChatGPT for Teens", "description": "ChatGPT version for 13–17-year-olds" },
+              { "name": "OpenAI", "description": "maker of ChatGPT" }
+            ],
+            "body": "After more than 4,000 test prompts, the group found ChatGPT missed over 1 in 4 cases where a teen needed a crisis referral and that parent alerts often failed to trigger; OpenAI says the testing doesn't reflect how its safeguards work in practice.",
+            "why_it_matters": null,
+            "plain_words": [
+              "A group that checks whether apps are safe for kids tested the teen version of ChatGPT and said it is not safe enough, especially when a teen needs help.",
+              "OpenAI says the test was unfair.",
+              "Pressure on AI companies to protect young users keeps growing."
+            ],
+            "sources": [
+              { "outlet": "Axios", "url": "https://www.axios.com/2026/10/07/chatgpt-teens-safety-risk-common-sense-media" }
+            ]
+          }
+        ]
+      }
+    ]
+  }
+}
