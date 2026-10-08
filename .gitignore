@@ -8,3 +8,6 @@ xcuserdata/
 DerivedData/
 build/
 *.xcscmblueprint
+
+# Pipeline
+pipeline/out/
