@@ -1,7 +1,8 @@
 import UserNotifications
 
-/// The weekday morning notification. Scheduled locally for now; once the edition feed exists,
-/// a push carrying the day's Big Story should replace it.
+/// The weekday morning notification. It's a local notification, so it works on a free Apple
+/// account; it fires at the set time whether or not the edition has landed. A push sent by
+/// the pipeline would need a paid developer account.
 enum MorningNotification {
     private static let weekdays = 2...6 // Monday to Friday in the Gregorian calendar
     private static func identifier(_ weekday: Int) -> String { "morning-edition-\(weekday)" }
@@ -21,7 +22,7 @@ enum MorningNotification {
         for weekday in weekdays {
             let content = UNMutableNotificationContent()
             content.title = "Court & Capital"
-            content.body = "This morning’s edition is on the tray."
+            content.body = "Today’s edition is ready."
             content.threadIdentifier = "morning-edition"
             var components = DateComponents()
             components.weekday = weekday

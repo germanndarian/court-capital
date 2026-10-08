@@ -29,7 +29,7 @@ struct MastheadView: View {
                 .padding(.top, 12)
 
             HStack(alignment: .firstTextBaseline) {
-                Text(EditionFormat.dateline(edition.date))
+                Text(EditionFormat.dateline(edition.day))
                     .typeStyle(.dateline)
                     .foregroundStyle(Theme.ink)
                 Spacer(minLength: 8)
@@ -63,14 +63,14 @@ struct RuledLabel: View {
 
 /// Three-column market figures with hairline gutters.
 struct MarketsStrip: View {
-    let markets: [Market]
+    let quotes: [Quote]
 
     var body: some View {
         VStack(spacing: 0) {
             DoubleRule()
             LazyVGrid(columns: Array(repeating: GridItem(.flexible(), spacing: 0.5), count: 3), spacing: 0.5) {
-                ForEach(markets) { market in
-                    MarketCell(market: market)
+                ForEach(quotes) { quote in
+                    MarketCell(quote: quote)
                 }
             }
             .background(Theme.rule)
@@ -80,20 +80,20 @@ struct MarketsStrip: View {
 }
 
 private struct MarketCell: View {
-    let market: Market
+    let quote: Quote
 
     var body: some View {
         VStack(alignment: .leading, spacing: 0) {
-            Text(market.name)
+            Text(quote.name)
                 .typeStyle(.label(9, tracking: 0.18))
                 .foregroundStyle(Theme.inkMuted)
-            Text(market.value)
+            Text(quote.levelLabel)
                 .typeStyle(.figure)
                 .foregroundStyle(Theme.ink)
                 .padding(.top, 4)
-            Text(market.changeLabel)
+            Text(quote.changeWithArrow)
                 .typeStyle(TypeStyle(face: .newsreader, size: 11.5, weight: 500, tabularFigures: true, relativeTo: .caption))
-                .foregroundStyle(market.direction.color)
+                .foregroundStyle(quote.direction.color)
                 .padding(.top, 2)
         }
         .lineLimit(1)
@@ -137,12 +137,13 @@ struct SectionHeader: View {
 /// A headline with its region tag and chevron. Pressing fills the row with paper inset.
 struct StoryRow: View {
     let story: Story
+    let edition: Edition
     let action: () -> Void
 
     var body: some View {
         Button(action: action) {
             HStack(alignment: .top, spacing: 14) {
-                Text(story.title)
+                Text(story.headline)
                     .typeStyle(.rowHeadline)
                     .foregroundStyle(Theme.ink)
                     .multilineTextAlignment(.leading)
@@ -158,10 +159,27 @@ struct StoryRow: View {
             .contentShape(Rectangle())
         }
         .buttonStyle(PressedRowStyle())
+        .contextMenu {
+            ShareLink(item: StoryShare.text(story, in: edition)) {
+                Label("Share Story", systemImage: "square.and.arrow.up")
+            }
+        }
         .overlay(alignment: .bottom) { Hairline() }
         .padding(.horizontal, -10)
         .accessibilityElement(children: .combine)
         .accessibilityHint("Opens the story")
+    }
+}
+
+/// What a shared story looks like in Messages or Mail.
+enum StoryShare {
+    static func text(_ story: Story, in edition: Edition) -> String {
+        var lines = [story.headline, "", story.plainWordsText]
+        if let source = story.sources.first {
+            lines += ["", "\(source.outlet): \(source.url)"]
+        }
+        lines += ["", "Court & Capital · \(EditionFormat.dateline(edition.day))"]
+        return lines.joined(separator: "\n")
     }
 }
 

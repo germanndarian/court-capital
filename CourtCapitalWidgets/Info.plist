@@ -25,6 +25,10 @@
 		<key>NSExtensionPointIdentifier</key>
 		<string>com.apple.widgetkit-extension</string>
 	</dict>
+	<key>SUPABASE_HOST</key>
+	<string>$(SUPABASE_HOST)</string>
+	<key>SUPABASE_PUBLISHABLE_KEY</key>
+	<string>$(SUPABASE_PUBLISHABLE_KEY)</string>
 	<key>UIAppFonts</key>
 	<array>
 		<string>PlayfairDisplay-Variable.ttf</string>

@@ -13,23 +13,66 @@ struct CourtCapitalWidgets: WidgetBundle {
 
 struct EditionEntry: TimelineEntry {
     let date: Date
-    let edition: Edition
+    /// nil until the first edition has ever been fetched
+    let edition: Edition?
 }
 
-/// One entry per edition; the next timeline is requested when the 6:30 a.m. edition lands.
+/// Widgets can't share the app's cache without an App Group (a paid-account feature), so
+/// they fetch the latest edition from Supabase themselves and keep their own copy for when
+/// the network is down.
+enum WidgetEditions {
+    private static let cacheKey = "latestEdition"
+
+    static var cached: Edition? {
+        guard let data = UserDefaults.standard.data(forKey: cacheKey) else { return nil }
+        return try? JSONDecoder.edition.decode(Edition.self, from: data)
+    }
+
+    /// The latest edition, and whether it came fresh from Supabase.
+    static func load() async -> (edition: Edition?, fresh: Bool) {
+        if let service = try? EditionService(), let latest = try? await service.latest(limit: 1).first {
+            if let data = try? JSONEncoder.edition.encode(latest) {
+                UserDefaults.standard.set(data, forKey: cacheKey)
+            }
+            return (latest, true)
+        }
+        return (cached, false)
+    }
+}
+
+private struct UncheckedBox<Value>: @unchecked Sendable {
+    let value: Value
+}
+
+/// One entry per edition. After a successful fetch the next one is requested shortly after
+/// the next 05:00 edition; after a failed one, in half an hour.
 struct EditionProvider: TimelineProvider {
     func placeholder(in context: Context) -> EditionEntry {
         EditionEntry(date: .now, edition: SampleEdition.edition)
     }
 
     func getSnapshot(in context: Context, completion: @escaping (EditionEntry) -> Void) {
-        completion(placeholder(in: context))
+        if context.isPreview {
+            completion(EditionEntry(date: .now, edition: WidgetEditions.cached ?? SampleEdition.edition))
+            return
+        }
+        let reply = UncheckedBox(value: completion)
+        Task {
+            let result = await WidgetEditions.load()
+            reply.value(EditionEntry(date: .now, edition: result.edition ?? SampleEdition.edition))
+        }
     }
 
     func getTimeline(in context: Context, completion: @escaping (Timeline<EditionEntry>) -> Void) {
-        let entry = EditionEntry(date: .now, edition: SampleEdition.edition)
-        let refresh = EditionCalendar.nextDelivery(after: .now)
-        completion(Timeline(entries: [entry], policy: .after(refresh)))
+        let reply = UncheckedBox(value: completion)
+        Task {
+            let result = await WidgetEditions.load()
+            let upToDate = result.fresh && result.edition?.date == EditionCalendar.expectedEditionDate()
+            let next = upToDate
+                ? EditionCalendar.nextReady(after: .now).addingTimeInterval(10 * 60)
+                : Date.now.addingTimeInterval(30 * 60)
+            reply.value(Timeline(entries: [EditionEntry(date: .now, edition: result.edition)], policy: .after(next)))
+        }
     }
 }
 
@@ -46,7 +89,7 @@ struct EditionWidget: Widget {
             EditionWidgetView(entry: entry)
         }
         .configurationDisplayName("Today’s Edition")
-        .description("The Big Story, the markets and how long the edition takes to read.")
+        .description("The Big Story, three markets and how long the edition takes to read.")
         .supportedFamilies([.systemSmall, .systemMedium, .accessoryRectangular, .accessoryCircular, .accessoryInline])
         .contentMarginsDisabled()
     }
@@ -55,7 +98,7 @@ struct EditionWidget: Widget {
 struct EditionNumberWidget: Widget {
     var body: some WidgetConfiguration {
         StaticConfiguration(kind: "EditionNumberWidget", provider: EditionProvider()) { entry in
-            CircularFigure(big: Roman.numeral(entry.edition.number), small: "No.")
+            CircularFigure(big: entry.edition.map { Roman.numeral($0.number) } ?? "–", small: "No.")
                 .widgetURL(WidgetLink.today)
                 .containerBackground(for: .widget) { AccessoryWidgetBackground() }
         }
@@ -70,19 +113,22 @@ struct EditionWidgetView: View {
     @Environment(\.widgetFamily) private var family
 
     var body: some View {
-        let edition = entry.edition
         Group {
-            switch family {
-            case .systemMedium:
-                MediumEditionView(edition: edition)
-            case .accessoryRectangular:
-                RectangularEditionView(edition: edition)
-            case .accessoryCircular:
-                CircularFigure(big: "\(edition.readMinutes)", small: "Min")
-            case .accessoryInline:
-                Text("\(Image(systemName: "diamond.fill")) Court & Capital · \(edition.readMinutes) min")
-            default:
-                SmallEditionView(edition: edition)
+            if let edition = entry.edition {
+                switch family {
+                case .systemMedium:
+                    MediumEditionView(edition: edition)
+                case .accessoryRectangular:
+                    RectangularEditionView(edition: edition)
+                case .accessoryCircular:
+                    CircularFigure(big: "\(edition.readingMinutes)", small: "Min")
+                case .accessoryInline:
+                    Text("\(Image(systemName: "diamond.fill")) Court & Capital · \(edition.readingMinutes) min")
+                default:
+                    SmallEditionView(edition: edition)
+                }
+            } else {
+                NoEditionView(family: family)
             }
         }
         .widgetURL(WidgetLink.today)
@@ -99,6 +145,37 @@ struct EditionWidgetView: View {
 private extension WidgetFamily {
     var isAccessory: Bool {
         self == .accessoryRectangular || self == .accessoryCircular || self == .accessoryInline
+    }
+}
+
+/// Before the very first edition has been fetched.
+struct NoEditionView: View {
+    let family: WidgetFamily
+
+    var body: some View {
+        switch family {
+        case .accessoryInline:
+            Text("Court & Capital · 5:00 a.m.")
+        case .accessoryCircular:
+            CircularFigure(big: "–", small: "C&C")
+        case .accessoryRectangular:
+            VStack(alignment: .leading, spacing: 2) {
+                Text("Court & Capital")
+                    .typeStyle(.label(8, tracking: 0.2, weight: 700).fixed)
+                Text("The next edition arrives at 5:00 a.m.")
+                    .typeStyle(.display(13.5, lineHeight: 1.2, relativeTo: nil))
+            }
+            .frame(maxWidth: .infinity, alignment: .leading)
+        default:
+            VStack(spacing: 8) {
+                Crest(diameter: 30, ring: 2, monogram: 9)
+                Text("The next edition arrives at 5:00 a.m.")
+                    .typeStyle(.display(13, italic: true, relativeTo: nil))
+                    .foregroundStyle(Theme.ink)
+                    .multilineTextAlignment(.center)
+            }
+            .padding(16)
+        }
     }
 }
 
@@ -121,16 +198,16 @@ struct SmallEditionView: View {
                 .typeStyle(.label(7.5).fixed)
                 .foregroundStyle(Theme.brassText)
                 .padding(.top, 10)
-            Text(edition.bigStory)
+            Text(edition.bigStory.text)
                 .typeStyle(.display(14.5, lineHeight: 1.24, relativeTo: nil))
                 .foregroundStyle(Theme.ink)
                 .lineLimit(4)
                 .padding(.top, 4)
             Spacer(minLength: 0)
             HStack {
-                Text(EditionFormat.short(edition.date))
+                Text(EditionFormat.short(edition.day))
                 Spacer()
-                Text("\(edition.readMinutes) min")
+                Text("\(edition.readingMinutes) min")
             }
             .typeStyle(.label(7.5, tracking: 0.18).fixed)
             .foregroundStyle(Theme.inkMuted)
@@ -141,7 +218,7 @@ struct SmallEditionView: View {
     }
 }
 
-/// 364 × 170: wordmark, Big Story at 1.5 : 1 with four markets.
+/// 364 × 170: wordmark, Big Story at 1.5 : 1 with three markets.
 struct MediumEditionView: View {
     let edition: Edition
 
@@ -150,7 +227,7 @@ struct MediumEditionView: View {
             HStack(alignment: .firstTextBaseline) {
                 Wordmark(style: .display(16, relativeTo: nil))
                 Spacer()
-                Text("\(EditionFormat.short(edition.date)) · No. \(Roman.numeral(edition.number))")
+                Text("\(EditionFormat.short(edition.day)) · No. \(Roman.numeral(edition.number))")
                     .typeStyle(.label(8, tracking: 0.2).fixed)
                     .foregroundStyle(Theme.inkMuted)
             }
@@ -164,13 +241,13 @@ struct MediumEditionView: View {
                         Text("The Big Story")
                             .typeStyle(.label(7.5).fixed)
                             .foregroundStyle(Theme.brassText)
-                        Text(edition.bigStory)
+                        Text(edition.bigStory.text)
                             .typeStyle(.display(14.5, lineHeight: 1.24, relativeTo: nil))
                             .foregroundStyle(Theme.ink)
                             .lineLimit(4)
                             .padding(.top, 4)
                         Spacer(minLength: 0)
-                        Text("\(EditionFormat.storyCount(edition.storyCount)) · \(edition.readMinutes) min")
+                        Text("\(EditionFormat.storyCount(edition.storyCount)) · \(edition.readingMinutes) min")
                             .typeStyle(.label(7.5, tracking: 0.18).fixed)
                             .foregroundStyle(Theme.inkMuted)
                     }
@@ -178,20 +255,20 @@ struct MediumEditionView: View {
 
                     Link(destination: WidgetLink.markets) {
                         VStack(spacing: 0) {
-                            ForEach(edition.widgetMarkets) { market in
+                            ForEach(edition.widgetQuotes) { market in
                                 HStack(alignment: .firstTextBaseline, spacing: 6) {
                                     Text(market.name)
                                         .typeStyle(.label(7.5, tracking: 0.16).fixed)
                                         .foregroundStyle(Theme.inkMuted)
                                     Spacer(minLength: 0)
-                                    Text(market.changeLabel)
+                                    Text(market.changeWithArrow)
                                         .typeStyle(TypeStyle(face: .newsreader, size: 11, weight: 500, tabularFigures: true, relativeTo: nil))
                                         .foregroundStyle(market.direction.color)
                                 }
                                 .lineLimit(1)
                                 .padding(.bottom, 4)
                                 .overlay(alignment: .bottom) { Hairline() }
-                                if market.id != edition.widgetMarkets.last?.id { Spacer(minLength: 0) }
+                                if market.id != edition.widgetQuotes.last?.id { Spacer(minLength: 0) }
                             }
                         }
                         .padding(.leading, 12)
@@ -214,10 +291,10 @@ struct RectangularEditionView: View {
 
     var body: some View {
         VStack(alignment: .leading, spacing: 2) {
-            Text("C&C · The Big Story")
+            Text("C&C · \(EditionFormat.short(edition.day))")
                 .typeStyle(.label(8, tracking: 0.2, weight: 700).fixed)
                 .opacity(0.75)
-            Text(edition.bigStory)
+            Text(edition.bigStory.text)
                 .typeStyle(.display(13.5, lineHeight: 1.2, relativeTo: nil))
                 .lineLimit(2)
         }
