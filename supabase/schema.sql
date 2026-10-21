@@ -1,9 +1,9 @@
 -- Court & Capital database.
 -- Safe to run more than once. Paste setup.sql (this file plus the seed editions) into
--- Supabase → SQL Editor → New query → Run.
+-- Supabase -> SQL Editor -> New query -> Run.
 
 -- One row per published edition. `content` holds the whole edition as JSON
--- (pipeline/src/schema.ts → Edition); the other columns make listing cheap.
+-- (pipeline/src/schema.ts -> Edition); the other columns make listing cheap.
 create table if not exists public.editions (
   id uuid primary key default gen_random_uuid(),
   edition_date date not null unique,
