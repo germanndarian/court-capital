@@ -23,7 +23,7 @@ struct TodayView: View {
                 ScrollView {
                     NoticeView(
                         title: "No edition yet",
-                        message: store.refreshProblem ?? "The first edition arrives on the next weekday at 5:00 a.m."
+                        message: store.refreshProblem ?? "The first edition arrives on the next weekday at 5:30 a.m."
                     )
                     .containerRelativeFrame(.vertical)
                 }

@@ -1,11 +1,12 @@
 import Foundation
 
-/// Editions are dated and delivered in Zürich time, every weekday. The pipeline publishes
-/// by 05:00; the app expects today's edition from then on.
+/// Editions are dated in Zürich time, every weekday. The scheduled task writes them to
+/// Notion around 05:00; the app expects today's edition from 05:30.
 enum EditionCalendar {
     static let timeZone = TimeZone(identifier: "Europe/Zurich")!
     static let readyHour = 5
-    static let readyMinute = 0
+    static let readyMinute = 30
+    static let firstVolumeYear = 2026
 
     static var calendar: Calendar {
         var calendar = Calendar(identifier: .gregorian)
@@ -36,6 +37,32 @@ enum EditionCalendar {
         !calendar.isDateInWeekend(date)
     }
 
+    /// Weekdays from 1 January up to and including the date: 7 October 2026 is No. CC.
+    static func editionNumber(for iso: String) -> Int {
+        guard let date = date(from: iso) else { return 0 }
+        let calendar = calendar
+        let year = calendar.component(.year, from: date)
+        var day = calendar.date(from: DateComponents(year: year, month: 1, day: 1))!
+        var count = 0
+        while day <= date {
+            if isWeekday(day) { count += 1 }
+            day = calendar.date(byAdding: .day, value: 1, to: day)!
+        }
+        return count
+    }
+
+    static func volume(for iso: String) -> Int {
+        max(1, (Int(iso.prefix(4)) ?? firstVolumeYear) - firstVolumeYear + 1)
+    }
+
+    static func previousWeekday(before date: Date) -> Date {
+        var day = calendar.date(byAdding: .day, value: -1, to: date)!
+        while !isWeekday(day) {
+            day = calendar.date(byAdding: .day, value: -1, to: day)!
+        }
+        return day
+    }
+
     /// The moment today's edition should be ready, or the next weekday's after `date`.
     static func nextReady(after date: Date) -> Date {
         let calendar = calendar
@@ -47,7 +74,7 @@ enum EditionCalendar {
         }
     }
 
-    /// The edition the reader should have by now: today's after 05:00 on a weekday,
+    /// The edition the reader should have by now: today's after 05:30 on a weekday,
     /// otherwise the most recent weekday's.
     static func expectedEditionDate(at now: Date = .now) -> String {
         let calendar = calendar

@@ -1,46 +1,55 @@
 import Foundation
 import SwiftData
 
-/// A downloaded edition, kept so it can be read offline.
+/// Every edition page the app has looked at. Readable ones keep their JSON, so they open
+/// offline; unreadable ones (no Data block, or JSON that doesn't decode) are remembered so
+/// they aren't downloaded again unless the page changes.
 @Model
-final class CachedEdition {
-    @Attribute(.unique) var date: String
-    var number: Int
-    var json: Data
-    var fetchedAt: Date
+final class StoredEdition {
+    @Attribute(.unique) var pageID: String
+    var title: String
+    var createdTime: Date
+    var lastEditedTime: Date
+    /// From the JSON, YYYY-MM-DD
+    var date: String?
+    /// The edition's JSON, when it reads cleanly.
+    var json: Data?
+    var isReadable: Bool
+    var checkedAt: Date
 
-    init(edition: Edition, json: Data) {
-        date = edition.date
-        number = edition.number
-        self.json = json
-        fetchedAt = .now
+    init(page: EditionPageRef) {
+        pageID = page.id
+        title = page.title
+        createdTime = page.createdTime
+        lastEditedTime = page.lastEditedTime
+        isReadable = false
+        checkedAt = .now
     }
 
     var edition: Edition? {
-        try? JSONDecoder.edition.decode(Edition.self, from: json)
-    }
-}
-
-/// One line of the archive index, kept so the archive lists editions offline too.
-@Model
-final class CachedArchiveItem {
-    @Attribute(.unique) var date: String
-    var number: Int
-    var bigStory: String
-    var readingMinutes: Int?
-
-    init(item: ArchiveItem) {
-        date = item.editionDate
-        number = item.number
-        bigStory = item.bigStory
-        readingMinutes = item.readingMinutes
-    }
-
-    var item: ArchiveItem {
-        ArchiveItem(editionDate: date, number: number, bigStory: bigStory, readingMinutes: readingMinutes)
+        guard isReadable, let json, let document = try? EditionDocument.decode(json) else { return nil }
+        return Edition(document: document)
     }
 }
 
 enum EditionCache {
-    static let schema: [any PersistentModel.Type] = [CachedEdition.self, CachedArchiveItem.self]
+    /// The cache lives in its own file. If it can't be opened (for example after a model
+    /// change), it's rebuilt from Notion rather than failing.
+    static func makeContainer() -> ModelContainer {
+        let schema = Schema([StoredEdition.self])
+        let folder = URL.applicationSupportDirectory
+        try? FileManager.default.createDirectory(at: folder, withIntermediateDirectories: true)
+        let url = folder.appending(path: "editions.store")
+        let configuration = ModelConfiguration(schema: schema, url: url)
+        if let container = try? ModelContainer(for: schema, configurations: configuration) {
+            return container
+        }
+        for suffix in ["", "-shm", "-wal"] {
+            try? FileManager.default.removeItem(at: URL(filePath: url.path() + suffix))
+        }
+        if let container = try? ModelContainer(for: schema, configurations: configuration) {
+            return container
+        }
+        return try! ModelContainer(for: schema, configurations: ModelConfiguration(isStoredInMemoryOnly: true))
+    }
 }

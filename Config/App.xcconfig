@@ -2,7 +2,7 @@
 // Your own values live in Secrets.xcconfig, which is not committed. To set it up, copy
 // Secrets.example.xcconfig to Secrets.xcconfig and fill it in.
 
-SUPABASE_HOST =
-SUPABASE_PUBLISHABLE_KEY =
+NOTION_TOKEN =
+NOTION_PAGE_ID =
 
 #include? "Secrets.xcconfig"

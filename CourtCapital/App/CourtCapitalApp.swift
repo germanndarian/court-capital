@@ -9,13 +9,7 @@ struct CourtCapitalApp: App {
     @Environment(\.scenePhase) private var scenePhase
 
     init() {
-        let container: ModelContainer
-        do {
-            container = try ModelContainer(for: Schema(EditionCache.schema))
-        } catch {
-            // A cache that can't be opened isn't worth failing over: start from an empty one.
-            container = try! ModelContainer(for: Schema(EditionCache.schema), configurations: ModelConfiguration(isStoredInMemoryOnly: true))
-        }
+        let container = EditionCache.makeContainer()
         self.container = container
         _model = State(initialValue: AppModel(store: EditionStore(context: container.mainContext)))
     }
