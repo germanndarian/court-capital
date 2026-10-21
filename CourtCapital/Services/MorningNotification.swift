@@ -2,7 +2,7 @@ import UserNotifications
 
 /// The weekday morning notification. It's a local notification, so it works on a free Apple
 /// account; it fires at the set time whether or not the edition has landed. A push sent by
-/// the pipeline would need a paid developer account.
+/// a server would need a paid developer account.
 enum MorningNotification {
     private static let weekdays = 2...6 // Monday to Friday in the Gregorian calendar
     private static func identifier(_ weekday: Int) -> String { "morning-edition-\(weekday)" }

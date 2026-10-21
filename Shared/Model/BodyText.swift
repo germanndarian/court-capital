@@ -1,6 +1,6 @@
 import Foundation
 
-/// A run of body copy. The pipeline marks italics with `*…*`: an italic run in parentheses
+/// A run of body copy. Editions mark italics with `*…*`: an italic run in parentheses
 /// is an inline explanation (muted), any other italic run is ordinary emphasis such as a
 /// case name.
 enum BodyRun: Sendable, Hashable {
@@ -35,7 +35,7 @@ enum BodyRun: Sendable, Hashable {
             if character == "\\", let next = characters.next() {
                 current.append(next)
             } else if character == "*" {
-                // `**` (bold) isn't used by the pipeline; treat it like a single marker.
+                // `**` (bold) isn’t expected in editions; treat it like a single marker.
                 if let next = characters.next(), next != "*" { pending = next }
                 flush()
                 italic.toggle()

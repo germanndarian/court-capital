@@ -10,13 +10,13 @@
   <img alt="Fonts: SIL OFL" src="https://img.shields.io/badge/fonts-SIL%20OFL-6F1F2C?style=flat-square&labelColor=F4EEE1">
 </p>
 
-<p align="center"><i>Ten stories. Eleven minutes. Every weekday by 5:00 a.m.</i></p>
+<p align="center"><i>Ten stories. Eleven minutes. Every weekday by 5:30 a.m.</i></p>
 
 ---
 
 Court & Capital is a morning briefing on law, finance and AI that reads like a newspaper. There's one Big Story, the overnight markets, and a short edition in numbered sections. Every story says who's who, why it matters, and what it means in plain words.
 
-Every weekday before 05:00 Zürich time, Claude researches the news and writes the edition. The iPhone app reads it, keeps the latest ones for offline reading, and lays them out like a front page.
+Every weekday around 05:00 Zürich time, a Claude scheduled task researches the news and writes the edition into Notion. The iPhone app reads it from there, keeps the editions for offline reading, and lays them out like a front page. There's no server and no API bill: the task runs on a Claude plan, and the app only ever reads.
 
 <picture>
   <source media="(prefers-color-scheme: dark)" srcset="docs/readme/showcase-night.jpg">
@@ -51,7 +51,7 @@ Day is the morning paper. Night is the library: racing-green leather, cream type
   <img alt="The medium and small widgets" src="docs/readme/widgets-day.jpg">
 </picture>
 
-The widgets fetch the new edition shortly after 05:00. The medium widget shows the Big Story and three markets; on the Lock Screen you get the date and the Big Story headline. Tapping a widget opens Today, and the medium widget's market column jumps straight to the markets.
+The widgets fetch the new edition shortly after 05:30. The medium widget shows the Big Story and three markets; on the Lock Screen you get the date and the Big Story headline. Tapping a widget opens Today, and the medium widget's market column jumps straight to the markets.
 
 ## ◆ Type
 
@@ -73,56 +73,100 @@ Every token resolves per appearance and lives in [`Shared/Theme/Theme.swift`](Sh
 ## How it works
 
 ```
-GitHub Actions, Mon–Fri, 02:15 and 03:15 UTC (04:15 in Zürich, summer or winter)
-  └─ pipeline/  (TypeScript)
-       ├─ fetches market closes from Yahoo Finance
-       ├─ asks Claude (web search + web fetch) to write the edition from prompts/edition.md
-       ├─ checks it, keeps only source links that appeared in the search results
-       └─ saves it to Supabase  ──────────────┐
-                                              ▼
-iPhone app and widgets  ◀── read-only ── Supabase (editions table)
-  └─ SwiftData cache: the latest ten editions read offline
+Claude scheduled task, Mon–Fri around 05:00 Zürich time
+  └─ writes "Edition — Wednesday, 21 October 2026" as a child page of Court & Capital in Notion,
+     ending with a "Data" heading and one JSON code block holding the whole edition
+                                   │
+iPhone app and widgets ── read-only Notion integration ──▶ Court & Capital page
+  └─ SwiftData cache: every edition that reads cleanly stays available offline
 ```
 
-- **Writing:** only the morning job can write, using the secret key stored in GitHub. The app holds nothing but the publishable key, and the database only lets that key read editions.
-- **Failures:** a failed run is retried once and logged in the `generation_runs` table; GitHub emails you when a run fails. The app keeps showing the last good edition, with a note that today's is late.
+- **Read-only:** the app only reads; it never writes to Notion. Its integration has the *Read content* capability and sees only the pages you share with it.
+- **Finding editions:** the app lists the child pages of Court & Capital whose title starts with "Edition —", newest first. From each one it reads the last JSON code block.
+- **Missing or broken Data block:** that edition is skipped and the app shows the last good one with a short note. Editions written before the Data block existed don't appear in the archive.
+
+> **Status:** reading from Notion isn't finished yet. Until it is, the app shows two bundled sample editions (`Shared/Fixtures`), with a note saying so.
 
 ## Setup
 
-### 1. Supabase (the database)
+### 1. Create the Notion integration
 
-1. Create a free project at [supabase.com](https://supabase.com).
-2. Open **SQL Editor → New query**, paste the contents of [`supabase/setup.sql`](supabase/setup.sql) and click **Run**. This creates the tables, the read-only rule for the app, and two example editions.
-3. From **Project Settings → API Keys** you need the **project URL**, the **publishable key** (`sb_publishable_…`) and the **secret key** (`sb_secret_…`).
+1. Go to [notion.so/profile/integrations](https://www.notion.so/profile/integrations) and click **New integration**.
+2. Give it a name (e.g. *Court & Capital app*), pick your workspace, and leave the type as **Internal**. Click **Save**.
+3. Under **Capabilities**, tick **Read content** only. Untick *Update content* and *Insert content*, and choose *No user information*. Click **Save**.
+4. Under **Configuration → Internal Integration Secret**, click **Show** and **Copy**. It starts with `ntn_`. You'll paste it in step 4.
 
-### 2. GitHub (the morning job)
+### 2. Share the Court & Capital page with it
 
-Add two repository secrets. Each command asks you to paste the value:
+1. Open the **Court & Capital** page in Notion.
+2. Click **•••** (top right), then **Connections**, find your integration and click **Confirm**.
 
-```bash
-gh secret set ANTHROPIC_API_KEY --repo germanndarian/court-capital
+The edition pages underneath inherit the access. Nothing else in your workspace is visible to the app.
+
+### 3. The Data block in the scheduled task
+
+Add this to the end of the scheduled task's prompt, followed by the schema below:
+
+```
+After the edition, add a heading "Data" and below it exactly one code block with language json. It contains the complete edition in exactly the schema below. Rules: valid JSON only (no comments, no trailing commas); same stories and wording as the page; numbers as numbers, not strings; date as YYYY-MM-DD; sections in the order I. Corporate Law, II. Finance, III. AI; only real source URLs from your searches. Never skip this block: my iPhone app reads only the JSON.
 ```
 
-```bash
-gh secret set SUPABASE_SECRET_KEY --repo germanndarian/court-capital
+<details>
+<summary>The edition schema</summary>
+
+```json
+{
+  "schema_version": 1,
+  "date": "YYYY-MM-DD",
+  "big_story": "One line on the most important story of the day",
+  "markets": [
+    { "name": "S&P 500", "level": 0.0, "change_pct": 0.0 },
+    { "name": "Nasdaq", "level": 0.0, "change_pct": 0.0 },
+    { "name": "SMI", "level": 0.0, "change_pct": 0.0 },
+    { "name": "US 10Y", "level": 0.0, "change_pct": 0.0 },
+    { "name": "USD/CHF", "level": 0.0, "change_pct": 0.0 },
+    { "name": "Brent", "level": 0.0, "change_pct": 0.0 }
+  ],
+  "sections": [
+    {
+      "numeral": "I",
+      "title": "Corporate Law",
+      "stories": [
+        {
+          "headline": "What actually happened",
+          "region": "US",
+          "whos_who": "Company = what it is · Court = what it is",
+          "body": "2–4 sentences with facts, numbers and dates",
+          "why_it_matters": "1–2 sentences",
+          "in_plain_words": ["Short sentence.", "Short sentence.", "Short sentence."],
+          "sources": [{ "outlet": "Outlet name", "url": "https://..." }]
+        }
+      ]
+    }
+  ],
+  "footer": "compiled by Claude from public reporting · not financial or legal advice"
+}
 ```
 
-- **`ANTHROPIC_API_KEY`:** comes from [platform.claude.com](https://platform.claude.com) → **API Keys**, and needs prepaid credit.
-- **Project URL:** set in [`.github/workflows/edition.yml`](.github/workflows/edition.yml). Change it there if you move to another Supabase project.
+The app works out reading time, story counts, edition numbers and story ids itself. In `body`, an explanation in italic parentheses like `*(stepped aside from the case)*` is shown in muted italics. The two files in [`Shared/Fixtures`](Shared/Fixtures) are complete examples.
 
-### 3. The app
+</details>
 
-Copy the example config and fill it in:
+### 4. The app's keys
+
+Copy the example config:
 
 ```bash
 cp Config/Secrets.example.xcconfig Config/Secrets.xcconfig
 ```
 
-- `SUPABASE_HOST`: the project URL **without** `https://`, e.g. `abcdefgh.supabase.co`. Xcode's config files treat `//` as a comment.
-- `SUPABASE_PUBLISHABLE_KEY`: the publishable key.
-- `DEVELOPMENT_TEAM`: your Apple team ID, so signing survives regenerating the project. Find it in Xcode under **Settings → Accounts → your account → the team**, or copy it from the Signing & Capabilities tab after you've picked your team once.
+Then fill in `Config/Secrets.xcconfig`:
 
-`Config/Secrets.xcconfig` is gitignored and never committed.
+- `NOTION_TOKEN`: the integration secret from step 1.
+- `NOTION_PAGE_ID`: the 32-character ID at the end of the Court & Capital page's link, with or without dashes. Paste only the ID: Xcode's config files treat `//` as the start of a comment, so a full link would be cut off.
+- `DEVELOPMENT_TEAM`: your Apple team ID, so signing survives regenerating the project. Find it in Xcode under **Settings → Accounts → your account → the team**, or copy it from the Signing & Capabilities tab after picking your team once.
+
+`Config/Secrets.xcconfig` is gitignored, so the token never reaches GitHub. It does get built into the app on your iPhone, which is fine for a personal app: the integration can only read, and only the Court & Capital pages.
 
 ## Running on your iPhone
 
@@ -143,44 +187,10 @@ With a free Apple ID, the app stops opening 7 days after you last installed it. 
 | Feature | Free account | Paid account |
 | --- | --- | --- |
 | App, widgets, offline cache, background refresh | ✓ | ✓ |
-| Morning notification | Local, at a set time (05:05) | Could be a push sent the moment the edition lands, or when a run fails |
-| Widgets | Fetch from Supabase themselves | Could share the app's cache through an App Group: instant and offline |
+| Morning notification | Local, at a set time (05:30) | A push the moment the edition lands, though that would also need a small server watching Notion |
+| Widgets | Fetch from Notion themselves | Could share the app's cache through an App Group: instant and offline |
 | Sync across devices (iCloud) | — | Possible |
 | Signing | Expires after 7 days | Lasts a year; TestFlight available |
-
-## Day to day
-
-### Testing a run
-
-**Actions → Morning edition → Run workflow.**
-
-- **Dry run** (ticked by default): writes an edition and attaches it to the run as a download (`edition.json`) without publishing it.
-- **Untick it** to publish today's edition.
-- **Replace today's edition:** tick it to regenerate an edition that already exists.
-
-To run it on your Mac instead:
-
-```bash
-cd pipeline && npm ci && ANTHROPIC_API_KEY=... npm run generate -- --dry-run
-```
-
-### Changing the prompt
-
-Edit [`prompts/edition.md`](prompts/edition.md): sections, story counts, tone, what counts as news. The next run uses it; no code changes needed. The placeholders it can use are listed at the top of the file.
-
-### Changing the schedule
-
-The times are in [`.github/workflows/edition.yml`](.github/workflows/edition.yml), in UTC.
-
-- **Why two runs:** Zürich is UTC+2 in summer and UTC+1 in winter, so two runs an hour apart guarantee one lands at the right local time. The second sees the edition already exists and stops.
-- **To move delivery** (for example to 06:00), shift both times by the same amount (`15 3` and `15 4`).
-- **Keep the app in step:** update `readyHour` in [`Shared/Model/EditionCalendar.swift`](Shared/Model/EditionCalendar.swift) and the notification time in Settings.
-
-GitHub sometimes starts scheduled runs 5–30 minutes late, so leave some slack before your reading time.
-
-### Changing the model or cost
-
-The job uses Claude Opus 5.5 at high effort. Each run logs its token use, also stored in `generation_runs.usage`. To change the model or effort, set `CLAUDE_MODEL` (for example `claude-sonnet-5-5`) or `CLAUDE_EFFORT` (`low` to `max`) in the workflow's `env` block.
 
 ## Project layout
 
@@ -193,14 +203,12 @@ CourtCapital/            the app
   Services/              morning notification
 CourtCapitalWidgets/     Home Screen and Lock Screen widgets
 Shared/                  compiled into both targets
-  Data/                  Supabase reads (supabase-swift, PostgREST)
+  Data/                  edition feed (Notion or the samples), Notion settings
+  Fixtures/              two sample editions in the Data block format
   Model/                 edition, edition calendar, archive
   Theme/                 colour tokens, type scale, paper grain, rules, ornaments
   Fonts/                 Playfair Display and Newsreader (SIL OFL)
-Config/                  build settings; your keys go in Secrets.xcconfig
-pipeline/                the morning job (TypeScript)
-prompts/edition.md       the editorial instructions
-supabase/                database schema and seed editions
+Config/                  build settings; your token goes in Secrets.xcconfig
 Tools/                   app icon and README artwork renderers
 ```
 
