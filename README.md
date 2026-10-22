@@ -27,10 +27,10 @@ Every weekday around 05:00 Zürich time, a Claude scheduled task researches the 
 
 | | |
 | --- | --- |
-| **Today** | The masthead with Volume and edition number in Roman numerals, The Big Story, the markets at the previous close, and the day's stories by section, each tagged by region. Pull down to refresh. |
+| **Today** | The masthead with Volume and edition number in Roman numerals, The Big Story, the markets at the previous close with your iShares MSCI ACWI ETF underneath, and the day's stories by section, each tagged by region. Pull down to refresh. |
 | **The story** | Who's who, the facts with a brass drop cap, *Why it matters*, *In plain words*, sources that open in Safari, and a share button. |
 | **The Archive** | Every published edition, bound by month as leather volumes on a shelf. Pull a volume to read its ledger; tap a row to open that edition. |
-| **Settings** | The weekday morning notification and its delivery time, plus Day, Night or Automatic. |
+| **Settings** | The weekday morning notification and its delivery time, a break of any number of days, plus Day, Night or Automatic. |
 | **Widgets** | Small and medium on the Home Screen; rectangular, circular and inline on the Lock Screen. |
 
 <picture>
@@ -51,7 +51,7 @@ Day is the morning paper. Night is the library: racing-green leather, cream type
   <img alt="The medium and small widgets" src="docs/readme/widgets-day.jpg">
 </picture>
 
-The widgets fetch the new edition shortly after 05:30. The medium widget shows the Big Story and three markets; on the Lock Screen you get the date and the Big Story headline. Tapping a widget opens Today, and the medium widget's market column jumps straight to the markets.
+The widgets fetch the new edition shortly after 05:30. The medium widget shows the Big Story, three markets and your ETF; on the Lock Screen you get the date and the Big Story headline. Tapping a widget opens Today, and the medium widget's market column jumps straight to the markets.
 
 ## ◆ Type
 
@@ -181,6 +181,14 @@ Then fill in `Config/Secrets.xcconfig`:
 With a free Apple ID, the app stops opening 7 days after you last installed it. Your cached editions and settings survive. To renew it, connect the iPhone, open the project and press **⌘R** again. That's all.
 
 - **Limits:** a free account can have 3 sideloaded apps on a device at once, and this app uses 2 app IDs (the app and its widgets).
+
+### Your ETF
+
+The iShares MSCI ACWI UCITS ETF USD (Acc) (ISIN IE00B6R52259) isn't in the edition's data, so the app and the widget fetch it themselves: the US-dollar close on the London Stock Exchange (ISAC), from Yahoo Finance's public price data, with no key. Like the other markets it shows the last close before the edition and the change that day, and it's kept on the iPhone so it shows offline. If your Notion task ever adds a market whose name contains "ACWI", the app uses that figure instead. The listing is set in [`Shared/Data/MarketQuotes.swift`](Shared/Data/MarketQuotes.swift); `SSAC.SW` would show the Swiss listing in francs.
+
+### Taking a break
+
+**Settings → Take a break** pauses the edition for any number of days, up to 60. During the break there's no morning notification, Today says when the edition is back instead of warning that it's late, and the break ends on its own. The app can't stop your Claude scheduled task, so editions written during a break still appear in the archive. To stop the task itself, pause it in Claude.
 
 ### What a paid developer account ($99/year) would add
 

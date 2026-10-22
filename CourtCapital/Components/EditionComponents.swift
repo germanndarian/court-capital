@@ -64,6 +64,8 @@ struct RuledLabel: View {
 /// Three-column market figures with hairline gutters.
 struct MarketsStrip: View {
     let quotes: [Quote]
+    /// A full-width line under the grid for a market the app adds itself (your ETF).
+    var featured: (market: ExtraMarket, quote: Quote)?
 
     var body: some View {
         VStack(spacing: 0) {
@@ -74,8 +76,44 @@ struct MarketsStrip: View {
                 }
             }
             .background(Theme.rule)
+            if let featured {
+                Hairline()
+                FeaturedMarketRow(market: featured.market, quote: featured.quote)
+            }
             Hairline(color: Theme.ruleStrong)
         }
+    }
+}
+
+/// "iShares MSCI ACWI UCITS ETF · USD (Acc) ……… $121.54 ▼ −1.36%"
+private struct FeaturedMarketRow: View {
+    let market: ExtraMarket
+    let quote: Quote
+
+    var body: some View {
+        HStack(alignment: .firstTextBaseline, spacing: 12) {
+            VStack(alignment: .leading, spacing: 3) {
+                Text(market.fullName)
+                    .typeStyle(.label(9, tracking: 0.18))
+                    .foregroundStyle(Theme.inkMuted)
+                Text(market.listing)
+                    .typeStyle(.text(12, italic: true, relativeTo: .caption))
+                    .foregroundStyle(Theme.inkMuted)
+            }
+            .frame(maxWidth: .infinity, alignment: .leading)
+            VStack(alignment: .trailing, spacing: 2) {
+                Text(quote.levelLabel)
+                    .typeStyle(.figure)
+                    .foregroundStyle(Theme.ink)
+                Text(quote.changeWithArrow)
+                    .typeStyle(TypeStyle(face: .newsreader, size: 11.5, weight: 500, tabularFigures: true, relativeTo: .caption))
+                    .foregroundStyle(quote.direction.color)
+            }
+            .fixedSize()
+        }
+        .padding(EdgeInsets(top: 10, leading: 10, bottom: 11, trailing: 10))
+        .background(PaperBackground())
+        .accessibilityElement(children: .combine)
     }
 }
 
