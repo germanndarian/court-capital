@@ -8,7 +8,7 @@ struct RootView: View {
         ZStack {
             TodayTab()
                 .tabContent(visible: model.tab == .today)
-            ArchiveView()
+            ArchiveTab()
                 .tabContent(visible: model.tab == .archive)
             SettingsView()
                 .tabContent(visible: model.tab == .settings)
@@ -33,11 +33,46 @@ struct TodayTab: View {
             TodayView()
                 .toolbar(.hidden, for: .navigationBar)
                 .navigationDestination(for: StoryRoute.self) { route in
-                    if let story = model.edition.story(id: route.id) {
-                        StoryView(story: story)
-                            .toolbar(.hidden, for: .navigationBar)
+                    StoryDestination(route: route, backTitle: "Today") { model.todayPath.removeLast() }
+                }
+        }
+    }
+}
+
+struct ArchiveTab: View {
+    @Environment(AppModel.self) private var model
+
+    var body: some View {
+        @Bindable var model = model
+        NavigationStack(path: $model.archivePath) {
+            ArchiveView()
+                .toolbar(.hidden, for: .navigationBar)
+                .navigationDestination(for: ArchiveRoute.self) { route in
+                    switch route {
+                    case .edition(let date):
+                        ArchivedEditionView(date: date)
+                    case .story(let story):
+                        StoryDestination(route: story, backTitle: "Edition") { model.archivePath.removeLast() }
                     }
                 }
+        }
+    }
+}
+
+/// Finds the story's edition (from the cache) and shows it.
+struct StoryDestination: View {
+    let route: StoryRoute
+    let backTitle: String
+    let back: () -> Void
+    @Environment(EditionStore.self) private var store
+
+    var body: some View {
+        if let edition = store.cachedEdition(on: route.editionDate), let story = edition.story(id: route.storyID) {
+            StoryView(edition: edition, story: story, backTitle: backTitle, back: back)
+                .toolbar(.hidden, for: .navigationBar)
+        } else {
+            NoticeView(title: "Story unavailable", message: "This story isn’t saved on your iPhone yet.")
+                .paperScreen()
         }
     }
 }

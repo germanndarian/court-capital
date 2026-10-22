@@ -255,7 +255,7 @@ private struct SettingsFooter: View {
         VStack(spacing: 8) {
             Crest(diameter: 46, monogram: 14)
             Wordmark(style: .display(17, relativeTo: .headline), brassAmpersand: false)
-            Text("Version \(version) · Est. \(Roman.numeral(EditionCalendar.firstVolumeYear))")
+            Text("Version \(version) · Est. \(Roman.numeral(2026))")
                 .typeStyle(.label(9, tracking: 0.2))
                 .foregroundStyle(Theme.inkMuted)
         }

@@ -104,7 +104,7 @@ struct RegionTag: View {
 
     var body: some View {
         let color = region.color
-        Text(region.rawValue)
+        Text(region.code)
             .typeStyle(.tag)
             .foregroundStyle(style == .filled ? Theme.paper : color)
             .padding(EdgeInsets(top: 2.5, leading: 5.5, bottom: 1.5, trailing: 4))
@@ -115,11 +115,13 @@ struct RegionTag: View {
 }
 
 extension Region {
+    /// US navy, CH burgundy, EU green, as in the design; other regions in muted ink.
     var color: Color {
         switch self {
         case .us: Theme.tagUS
         case .ch: Theme.tagCH
         case .eu: Theme.tagEU
+        case .uk, .asia, .global, .other: Theme.inkMuted
         }
     }
 
@@ -128,11 +130,15 @@ extension Region {
         case .us: "United States"
         case .ch: "Switzerland"
         case .eu: "Europe"
+        case .uk: "United Kingdom"
+        case .asia: "Asia"
+        case .global: "Global"
+        case .other(let raw): raw
         }
     }
 }
 
-extension Market.Direction {
+extension Quote.Direction {
     var color: Color {
         switch self {
         case .up: Theme.up

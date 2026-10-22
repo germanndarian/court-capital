@@ -9,5 +9,5 @@ DerivedData/
 build/
 *.xcscmblueprint
 
-# Pipeline
-pipeline/out/
+# Local keys and signing
+Config/Secrets.xcconfig

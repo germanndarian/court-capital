@@ -1,59 +1,42 @@
 import Foundation
 
-/// One row of the archive ledger.
-struct ArchiveEntry: Identifiable, Sendable {
-    let number: Int
-    let date: Date
-    let headline: String
-    let readMinutes: Int
-    let isCurrent: Bool
-    var id: Int { number }
-}
-
 /// A bound month of editions: one spine on the shelf.
-struct ArchiveMonth: Identifiable, Sendable {
-    let month: Int
+struct ArchiveMonth: Identifiable, Sendable, Hashable {
     let year: Int
-    let entries: [ArchiveEntry]
-    var id: Int { month }
-}
+    let month: Int
+    /// Newest first
+    let items: [ArchiveItem]
 
-/// The year's editions so far, bound by month.
-struct Archive: Sendable {
-    let months: [ArchiveMonth]
-    let editionCount: Int
-    let volume: Int
+    var id: String { "\(year)-\(month)" }
 
-    init(current edition: Edition) {
-        let calendar = EditionCalendar.calendar
-        let days = EditionCalendar.editionDays(through: edition.date)
-        let entries = days.enumerated().map { index, day in
-            let number = index + 1
-            let isCurrent = number == days.count
-            return ArchiveEntry(
-                number: number,
-                date: day,
-                headline: isCurrent ? edition.bigStory : SampleEdition.pastHeadlines[number % SampleEdition.pastHeadlines.count],
-                readMinutes: isCurrent ? edition.readMinutes : 8 + number % 5,
-                isCurrent: isCurrent
-            )
-        }
-        let year = calendar.component(.year, from: edition.date)
-        let lastMonth = calendar.component(.month, from: edition.date)
-        months = (1...lastMonth).map { month in
-            ArchiveMonth(
-                month: month,
-                year: year,
-                entries: entries.filter { calendar.component(.month, from: $0.date) == month }
-            )
-        }
-        editionCount = entries.count
-        volume = edition.volume
-    }
-}
-
-extension ArchiveMonth {
     var firstDay: Date {
         EditionCalendar.calendar.date(from: DateComponents(year: year, month: month, day: 1))!
     }
+}
+
+/// The published editions, bound by month for the shelf and ledger.
+struct Archive: Sendable {
+    /// Oldest month first, as the books stand on the shelf.
+    let months: [ArchiveMonth]
+    let editionCount: Int
+
+    init(items: [ArchiveItem]) {
+        let calendar = EditionCalendar.calendar
+        let grouped = Dictionary(grouping: items) { item -> DateComponents in
+            calendar.dateComponents([.year, .month], from: item.day)
+        }
+        months = grouped
+            .map { components, items in
+                ArchiveMonth(
+                    year: components.year ?? 0,
+                    month: components.month ?? 0,
+                    items: items.sorted { $0.editionDate > $1.editionDate }
+                )
+            }
+            .sorted { ($0.year, $0.month) < ($1.year, $1.month) }
+        editionCount = items.count
+    }
+
+    /// The shelf shows the twelve most recent months.
+    var shelf: [ArchiveMonth] { Array(months.suffix(12)) }
 }

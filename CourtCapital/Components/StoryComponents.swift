@@ -3,6 +3,7 @@ import SwiftUI
 
 /// "‹ Today · C&C · No. CC" over a hairline.
 struct StoryTopBar: View {
+    var backTitle = "Today"
     let editionNumber: Int
     let back: () -> Void
 
@@ -14,7 +15,7 @@ struct StoryTopBar: View {
                         .typeStyle(.text(22, relativeTo: .body))
                         .frame(height: 10)
                         .offset(y: -1.5)
-                    Text("Today")
+                    Text(backTitle)
                         .typeStyle(.label(10))
                 }
                 .foregroundStyle(Theme.brassText)
@@ -23,7 +24,7 @@ struct StoryTopBar: View {
                 .contentShape(Rectangle())
             }
             .buttonStyle(.plain)
-            .accessibilityLabel("Back to Today")
+            .accessibilityLabel("Back to \(backTitle)")
 
             Spacer(minLength: 0)
             Text("C&C")
@@ -55,11 +56,11 @@ struct WhosWhoCard: View {
             Grid(alignment: .topLeading, horizontalSpacing: 12, verticalSpacing: 7) {
                 ForEach(terms) { term in
                     GridRow(alignment: .firstTextBaseline) {
-                        Text(term.term)
+                        Text(term.name)
                             .typeStyle(.text(14.5, weight: 600, lineHeight: 1.3, relativeTo: .subheadline))
                             .foregroundStyle(Theme.ink)
                             .frame(width: termWidth, alignment: .leading)
-                        Text(term.definition)
+                        Text(term.description)
                             .typeStyle(.text(14.5, italic: true, lineHeight: 1.3, relativeTo: .subheadline))
                             .foregroundStyle(Theme.inkMuted)
                             .frame(maxWidth: .infinity, alignment: .leading)
@@ -140,7 +141,7 @@ struct SourceList: View {
             Hairline(color: Theme.ruleStrong, thickness: 1.5)
             ForEach(Array(sources.enumerated()), id: \.element.id) { index, source in
                 Button {
-                    open(source.url)
+                    if let link = source.link { open(link) }
                 } label: {
                     HStack(alignment: .firstTextBaseline, spacing: 14) {
                         Text("\(Roman.numeral(index + 1).lowercased()).")
@@ -148,7 +149,7 @@ struct SourceList: View {
                             .foregroundStyle(Theme.brassText)
                             .frame(minWidth: 18, alignment: .leading)
                             .accessibilityHidden(true)
-                        Text(source.name)
+                        Text(source.outlet)
                             .typeStyle(.text(16, relativeTo: .callout))
                             .frame(maxWidth: .infinity, alignment: .leading)
                         Text("↗\u{FE0E}")
@@ -175,35 +176,23 @@ private struct SourceRowStyle: ButtonStyle {
     }
 }
 
-/// Where who's who, body, quotes and sources land for stories the feed has not filled yet.
-struct FeedPlaceholder: View {
+/// "Share this story" in letter-spaced brass, opening the share sheet.
+struct ShareStoryButton: View {
+    let text: String
+
     var body: some View {
-        ZStack {
-            Canvas { context, size in
-                var path = Path()
-                var offset: CGFloat = 0
-                while offset < size.width + size.height {
-                    path.move(to: CGPoint(x: offset, y: 0))
-                    path.addLine(to: CGPoint(x: offset - size.height, y: size.height))
-                    offset += 9.5
-                }
-                context.stroke(path, with: .color(Theme.rule), lineWidth: 0.5)
+        ShareLink(item: text) {
+            HStack(spacing: 10) {
+                Lozenge()
+                Text("Share this story")
+                    .typeStyle(.label(10))
+                Lozenge()
             }
-            Text("who’s who · body · why it matters\nin plain words · sources\n— from the edition feed —")
-                .font(.system(size: 11, design: .monospaced))
-                .lineSpacing(6)
-                .multilineTextAlignment(.center)
-                .foregroundStyle(Theme.inkMuted)
-                .padding(.horizontal, 10)
-                .padding(.vertical, 6)
-                .background(Theme.paper)
+            .foregroundStyle(Theme.brassText)
+            .frame(maxWidth: .infinity, minHeight: 44)
+            .contentShape(Rectangle())
         }
-        .frame(height: 260)
-        .frame(maxWidth: .infinity)
-        .clipped()
-        .overlay(Rectangle().strokeBorder(Theme.ruleStrong, lineWidth: 0.5))
-        .accessibilityElement()
-        .accessibilityLabel("The full story arrives with the edition feed.")
+        .buttonStyle(.plain)
     }
 }
 

@@ -9,6 +9,11 @@ options:
   developmentLanguage: en
   groupSortPosition: top
 
+# Keys and the signing team come from Config/Secrets.xcconfig (gitignored).
+configFiles:
+  Debug: Config/App.xcconfig
+  Release: Config/App.xcconfig
+
 settings:
   base:
     SWIFT_VERSION: "6.0"
@@ -44,6 +49,12 @@ targets:
           - CFBundleURLName: com.germanndarian.courtcapital
             CFBundleURLSchemes:
               - courtcapital
+        UIBackgroundModes:
+          - fetch
+        BGTaskSchedulerPermittedIdentifiers:
+          - com.germanndarian.courtcapital.refresh
+        NOTION_TOKEN: $(NOTION_TOKEN)
+        NOTION_PAGE_ID: $(NOTION_PAGE_ID)
         UIAppFonts: &fonts
           - PlayfairDisplay-Variable.ttf
           - PlayfairDisplay-Italic-Variable.ttf
@@ -70,6 +81,8 @@ targets:
         CFBundleVersion: $(CURRENT_PROJECT_VERSION)
         NSExtension:
           NSExtensionPointIdentifier: com.apple.widgetkit-extension
+        NOTION_TOKEN: $(NOTION_TOKEN)
+        NOTION_PAGE_ID: $(NOTION_PAGE_ID)
         UIAppFonts: *fonts
     settings:
       base:
@@ -80,6 +93,24 @@ targets:
       - sdk: WidgetKit.framework
       - sdk: SwiftUI.framework
 
+  # Unit tests for the Notion client, the feed and the cache. They compile the code they test
+  # themselves instead of running inside the app, so no test ever reaches the real Notion:
+  # every request goes to a stub (Tests/NotionStub.swift).
+  CourtCapitalTests:
+    type: bundle.unit-test
+    platform: iOS
+    sources:
+      - path: Tests
+      - path: Shared/Data
+      - path: Shared/Model
+      - path: Shared/Fixtures
+      - path: CourtCapital/Data/EditionStore.swift
+      - path: CourtCapital/Data/EditionCache.swift
+    settings:
+      base:
+        PRODUCT_BUNDLE_IDENTIFIER: com.germanndarian.courtcapital.tests
+        GENERATE_INFOPLIST_FILE: YES
+
 schemes:
   CourtCapital:
     build:
@@ -88,3 +119,7 @@ schemes:
         CourtCapitalWidgets: all
     run:
       config: Debug
+    test:
+      config: Debug
+      targets:
+        - CourtCapitalTests

@@ -1,62 +1,91 @@
 import Foundation
 
-/// Editions appear every weekday. The edition number counts weekdays since 1 January of the
-/// volume's year, and Volume I is 2026.
+/// Editions are dated in Zürich time, every weekday. The scheduled task writes them to
+/// Notion around 05:00; the app expects today's edition from 05:30.
 enum EditionCalendar {
+    static let timeZone = TimeZone(identifier: "Europe/Zurich")!
+    static let readyHour = 5
+    static let readyMinute = 30
     static let firstVolumeYear = 2026
-    static let deliveryHour = 6
-    static let deliveryMinute = 30
 
     static var calendar: Calendar {
         var calendar = Calendar(identifier: .gregorian)
         calendar.locale = Locale(identifier: "en_GB")
+        calendar.timeZone = timeZone
         return calendar
+    }
+
+    private static let isoFormatter: DateFormatter = {
+        let formatter = DateFormatter()
+        formatter.locale = Locale(identifier: "en_US_POSIX")
+        formatter.calendar = calendar
+        formatter.timeZone = timeZone
+        formatter.dateFormat = "yyyy-MM-dd"
+        return formatter
+    }()
+
+    /// Midnight in Zürich on a YYYY-MM-DD date.
+    static func date(from iso: String) -> Date? {
+        isoFormatter.date(from: iso)
+    }
+
+    static func iso(_ date: Date) -> String {
+        isoFormatter.string(from: date)
     }
 
     static func isWeekday(_ date: Date) -> Bool {
         !calendar.isDateInWeekend(date)
     }
 
-    static func volume(for date: Date) -> Int {
-        calendar.component(.year, from: date) - firstVolumeYear + 1
-    }
-
-    static func editionNumber(for date: Date) -> Int {
-        editionDays(through: date).count
-    }
-
-    /// Every weekday from 1 January of the date's year up to and including the date.
-    static func editionDays(through date: Date) -> [Date] {
+    /// Weekdays from 1 January up to and including the date: 7 October 2026 is No. CC.
+    static func editionNumber(for iso: String) -> Int {
+        guard let date = date(from: iso) else { return 0 }
         let calendar = calendar
-        let end = calendar.startOfDay(for: date)
-        let year = calendar.component(.year, from: end)
+        let year = calendar.component(.year, from: date)
         var day = calendar.date(from: DateComponents(year: year, month: 1, day: 1))!
-        var days: [Date] = []
-        while day <= end {
-            if !calendar.isDateInWeekend(day) { days.append(day) }
+        var count = 0
+        while day <= date {
+            if isWeekday(day) { count += 1 }
             day = calendar.date(byAdding: .day, value: 1, to: day)!
         }
-        return days
+        return count
     }
 
-    /// The next weekday delivery strictly after `date`.
-    static func nextDelivery(after date: Date) -> Date {
-        let calendar = calendar
-        var day = calendar.startOfDay(for: date)
-        while true {
-            let delivery = calendar.date(bySettingHour: deliveryHour, minute: deliveryMinute, second: 0, of: day)!
-            if delivery > date && !calendar.isDateInWeekend(day) { return delivery }
-            day = calendar.date(byAdding: .day, value: 1, to: day)!
-        }
+    static func volume(for iso: String) -> Int {
+        max(1, (Int(iso.prefix(4)) ?? firstVolumeYear) - firstVolumeYear + 1)
     }
 
-    /// The weekday before `date`, whose close the markets strip reports.
     static func previousWeekday(before date: Date) -> Date {
         var day = calendar.date(byAdding: .day, value: -1, to: date)!
-        while calendar.isDateInWeekend(day) {
+        while !isWeekday(day) {
             day = calendar.date(byAdding: .day, value: -1, to: day)!
         }
         return day
+    }
+
+    /// The moment today's edition should be ready, or the next weekday's after `date`.
+    static func nextReady(after date: Date) -> Date {
+        let calendar = calendar
+        var day = calendar.startOfDay(for: date)
+        while true {
+            let ready = calendar.date(bySettingHour: readyHour, minute: readyMinute, second: 0, of: day)!
+            if ready > date && isWeekday(day) { return ready }
+            day = calendar.date(byAdding: .day, value: 1, to: day)!
+        }
+    }
+
+    /// The edition the reader should have by now: today's after 05:30 on a weekday,
+    /// otherwise the most recent weekday's.
+    static func expectedEditionDate(at now: Date = .now) -> String {
+        let calendar = calendar
+        var day = calendar.startOfDay(for: now)
+        let readyToday = calendar.date(bySettingHour: readyHour, minute: readyMinute, second: 0, of: day)!
+        if !isWeekday(day) || now < readyToday {
+            repeat {
+                day = calendar.date(byAdding: .day, value: -1, to: day)!
+            } while !isWeekday(day)
+        }
+        return iso(day)
     }
 }
 
@@ -84,6 +113,7 @@ enum EditionFormat {
         let formatter = DateFormatter()
         formatter.locale = Locale(identifier: "en_GB")
         formatter.calendar = EditionCalendar.calendar
+        formatter.timeZone = EditionCalendar.timeZone
         formatter.dateFormat = format
         return formatter
     }
@@ -107,7 +137,7 @@ enum EditionFormat {
     static func month(_ date: Date) -> String { monthName.string(from: date) }
     static func monthAbbreviation(_ date: Date) -> String { monthShort.string(from: date) }
 
-    /// 6:30 a.m.
+    /// 5:05 a.m.
     static func time(minutesAfterMidnight minutes: Int) -> String {
         let hour = minutes / 60 % 24
         let minute = minutes % 60

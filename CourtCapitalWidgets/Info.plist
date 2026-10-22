@@ -20,6 +20,10 @@
 	<string>$(MARKETING_VERSION)</string>
 	<key>CFBundleVersion</key>
 	<string>$(CURRENT_PROJECT_VERSION)</string>
+	<key>NOTION_PAGE_ID</key>
+	<string>$(NOTION_PAGE_ID)</string>
+	<key>NOTION_TOKEN</key>
+	<string>$(NOTION_TOKEN)</string>
 	<key>NSExtension</key>
 	<dict>
 		<key>NSExtensionPointIdentifier</key>

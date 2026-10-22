@@ -18,8 +18,16 @@ enum TodayAnchor: Hashable {
     case markets
 }
 
+/// A story in a particular edition.
 struct StoryRoute: Hashable {
-    let id: Story.ID
+    let editionDate: String
+    let storyID: Story.ID
+}
+
+/// Screens pushed from the Archive tab.
+enum ArchiveRoute: Hashable {
+    case edition(String)
+    case story(StoryRoute)
 }
 
 @MainActor
@@ -27,20 +35,28 @@ struct StoryRoute: Hashable {
 final class AppModel {
     var tab: AppTab = .today
     var todayPath: [StoryRoute] = []
+    var archivePath: [ArchiveRoute] = []
     var pendingAnchor: TodayAnchor?
 
-    let edition = SampleEdition.edition
-    let archive: Archive
+    let store: EditionStore
 
-    init() {
-        archive = Archive(current: edition)
+    init(store: EditionStore) {
+        self.store = store
     }
 
-    var isReadingStory: Bool { tab == .today && !todayPath.isEmpty }
+    /// The tab bar steps aside while a story is open.
+    var isReadingStory: Bool {
+        switch tab {
+        case .today: !todayPath.isEmpty
+        case .archive: if case .story = archivePath.last { true } else { false }
+        case .settings: false
+        }
+    }
 
-    func open(_ id: Story.ID) {
+    func openToday(story id: Story.ID) {
+        guard let latest = store.latest else { return }
         tab = .today
-        todayPath = [StoryRoute(id: id)]
+        todayPath = [StoryRoute(editionDate: latest.date, storyID: id)]
     }
 
     func showToday(anchor: TodayAnchor? = nil) {
@@ -54,8 +70,8 @@ final class AppModel {
         guard url.scheme == "courtcapital" else { return }
         switch url.host() {
         case "story":
-            if let id = url.pathComponents.dropFirst().first, edition.story(id: id) != nil {
-                open(id)
+            if let id = url.pathComponents.dropFirst().first, store.latest?.story(id: id) != nil {
+                openToday(story: id)
             } else {
                 showToday()
             }

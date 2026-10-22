@@ -51,7 +51,7 @@ final class DropCapView: UIView {
 
     func configure(runs: [BodyRun], bodySize: CGFloat) {
         let fullText = runs.map(\.string).joined()
-        guard let first = fullText.first, case .text(let opening) = runs.first else { return }
+        guard let first = fullText.first, let opening = runs.first?.string else { return }
         self.bodySize = bodySize
         accessibilityLabel = fullText
 
@@ -72,10 +72,15 @@ final class DropCapView: UIView {
         for (index, run) in runs.enumerated() {
             var string = run.string
             if index == 0 { string = String(opening.dropFirst()) }
+            let isItalic: Bool
             let isAside: Bool
-            if case .aside = run { isAside = true } else { isAside = false }
+            switch run {
+            case .text: (isItalic, isAside) = (false, false)
+            case .aside: (isItalic, isAside) = (true, true)
+            case .emphasis: (isItalic, isAside) = (true, false)
+            }
             body.append(NSAttributedString(string: string, attributes: [
-                .font: isAside ? italic : regular,
+                .font: isItalic ? italic : regular,
                 .foregroundColor: isAside ? Palette.inkMuted : Palette.ink,
                 .paragraphStyle: paragraph,
                 .baselineOffset: halfLeading,
