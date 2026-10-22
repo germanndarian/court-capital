@@ -15,6 +15,8 @@ struct EditionEntry: TimelineEntry {
     let date: Date
     /// nil until the first edition has ever been fetched
     let edition: Edition?
+    /// Your ETF, fetched by the widget like the app does
+    var acwi: Quote?
 }
 
 /// Widgets can't share the app's cache without an App Group (a paid-account feature), so
@@ -38,6 +40,16 @@ enum WidgetEditions {
         }
         return (cached, false)
     }
+
+    /// The edition and its ETF close, ready for an entry.
+    static func entry() async -> (entry: EditionEntry, fresh: Bool) {
+        let result = await load()
+        var acwi: Quote?
+        if let edition = result.edition {
+            acwi = MarketQuotes.quote(.acwi, in: edition, fetched: await MarketQuotes.quote(.acwi, for: edition.date))
+        }
+        return (EditionEntry(date: .now, edition: result.edition, acwi: acwi), result.fresh)
+    }
 }
 
 private struct UncheckedBox<Value>: @unchecked Sendable {
@@ -58,20 +70,20 @@ struct EditionProvider: TimelineProvider {
         }
         let reply = UncheckedBox(value: completion)
         Task {
-            let result = await WidgetEditions.load()
-            reply.value(EditionEntry(date: .now, edition: result.edition ?? SampleEdition.edition))
+            let result = await WidgetEditions.entry()
+            reply.value(result.entry.edition == nil ? EditionEntry(date: .now, edition: SampleEdition.edition) : result.entry)
         }
     }
 
     func getTimeline(in context: Context, completion: @escaping (Timeline<EditionEntry>) -> Void) {
         let reply = UncheckedBox(value: completion)
         Task {
-            let result = await WidgetEditions.load()
-            let upToDate = result.fresh && result.edition?.date == EditionCalendar.expectedEditionDate()
+            let result = await WidgetEditions.entry()
+            let upToDate = result.fresh && result.entry.edition?.date == EditionCalendar.expectedEditionDate()
             let next = upToDate
                 ? EditionCalendar.nextReady(after: .now).addingTimeInterval(10 * 60)
                 : Date.now.addingTimeInterval(30 * 60)
-            reply.value(Timeline(entries: [EditionEntry(date: .now, edition: result.edition)], policy: .after(next)))
+            reply.value(Timeline(entries: [result.entry], policy: .after(next)))
         }
     }
 }
@@ -89,7 +101,7 @@ struct EditionWidget: Widget {
             EditionWidgetView(entry: entry)
         }
         .configurationDisplayName("Today’s Edition")
-        .description("The Big Story, three markets and how long the edition takes to read.")
+        .description("The Big Story, the markets with your ETF, and how long the edition takes to read.")
         .supportedFamilies([.systemSmall, .systemMedium, .accessoryRectangular, .accessoryCircular, .accessoryInline])
         .contentMarginsDisabled()
     }
@@ -117,7 +129,7 @@ struct EditionWidgetView: View {
             if let edition = entry.edition {
                 switch family {
                 case .systemMedium:
-                    MediumEditionView(edition: edition)
+                    MediumEditionView(edition: edition, acwi: entry.acwi)
                 case .accessoryRectangular:
                     RectangularEditionView(edition: edition)
                 case .accessoryCircular:
@@ -218,9 +230,13 @@ struct SmallEditionView: View {
     }
 }
 
-/// 364 × 170: wordmark, Big Story at 1.5 : 1 with three markets.
+/// 364 × 170: wordmark, Big Story at 1.5 : 1 with three markets and your ETF.
 struct MediumEditionView: View {
     let edition: Edition
+    var acwi: Quote?
+
+    /// S&P 500, SMI, USD/CHF, and your ETF when its close is known.
+    private var quotes: [Quote] { edition.widgetQuotes + (acwi.map { [$0] } ?? []) }
 
     var body: some View {
         VStack(alignment: .leading, spacing: 0) {
@@ -255,7 +271,7 @@ struct MediumEditionView: View {
 
                     Link(destination: WidgetLink.markets) {
                         VStack(spacing: 0) {
-                            ForEach(edition.widgetQuotes) { market in
+                            ForEach(quotes) { market in
                                 HStack(alignment: .firstTextBaseline, spacing: 6) {
                                     // The figure always shows in full; a long name such as
                                     // USD/CHF shrinks a little instead.
@@ -273,7 +289,7 @@ struct MediumEditionView: View {
                                 .lineLimit(1)
                                 .padding(.bottom, 4)
                                 .overlay(alignment: .bottom) { Hairline() }
-                                if market.id != edition.widgetQuotes.last?.id { Spacer(minLength: 0) }
+                                if market.id != quotes.last?.id { Spacer(minLength: 0) }
                             }
                         }
                         .padding(.leading, 12)

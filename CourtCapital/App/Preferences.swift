@@ -5,6 +5,8 @@ enum Preferences {
     static let appearance = "appearance"
     static let morningNotification = "morningNotification"
     static let deliveryMinutes = "deliveryMinutes"
+    /// The last day of a break from the edition (YYYY-MM-DD), or empty
+    static let pausedThrough = "pausedThrough"
 
     /// 05:30: the task writes around 05:00 and needs a few minutes.
     static let defaultDeliveryMinutes = 5 * 60 + 30

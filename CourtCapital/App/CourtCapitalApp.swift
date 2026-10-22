@@ -26,7 +26,10 @@ struct CourtCapitalApp: App {
                 .onChange(of: scenePhase) { _, phase in
                     switch phase {
                     case .active:
-                        Task { await model.store.refresh() }
+                        Task {
+                            await model.store.refresh()
+                            await MorningNotification.refresh()
+                        }
                     case .background:
                         BackgroundRefresh.schedule()
                     default:
@@ -37,6 +40,7 @@ struct CourtCapitalApp: App {
         .modelContainer(container)
         .backgroundTask(.appRefresh(BackgroundRefresh.identifier)) {
             await model.store.refresh()
+            await MorningNotification.refresh()
             BackgroundRefresh.schedule()
         }
     }

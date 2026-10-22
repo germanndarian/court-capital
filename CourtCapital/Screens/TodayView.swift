@@ -4,6 +4,14 @@ import SwiftUI
 struct TodayView: View {
     @Environment(AppModel.self) private var model
     @Environment(EditionStore.self) private var store
+    @AppStorage(Preferences.pausedThrough) private var pausedThrough = ""
+
+    /// During a break the page stays quiet: it says when the edition is back, instead of
+    /// warning that today's is late.
+    private var note: String? {
+        if store.isSample { return store.lateNote }
+        return EditionPause.note(through: pausedThrough) ?? store.lateNote ?? store.refreshProblem
+    }
 
     var body: some View {
         Group {
@@ -11,7 +19,7 @@ struct TodayView: View {
                 EditionPage(
                     edition: edition,
                     isToday: true,
-                    note: store.lateNote ?? store.refreshProblem,
+                    note: note,
                     anchor: model.pendingAnchor,
                     openStory: { model.openToday(story: $0) },
                     anchorHandled: { model.pendingAnchor = nil }
@@ -42,6 +50,11 @@ struct EditionPage: View {
     var anchor: TodayAnchor?
     let openStory: (Story.ID) -> Void
     var anchorHandled: () -> Void = {}
+    @State private var fetchedACWI: Quote?
+
+    private var acwi: Quote? {
+        MarketQuotes.quote(.acwi, in: edition, fetched: fetchedACWI ?? MarketQuotes.cached(.acwi, for: edition.date))
+    }
 
     var body: some View {
         ScrollViewReader { proxy in
@@ -86,7 +99,10 @@ struct EditionPage: View {
                     }
                     .padding(.top, 30)
                     .id(TodayAnchor.markets)
-                    MarketsStrip(quotes: edition.markets.quotes)
+                    MarketsStrip(
+                        quotes: edition.markets.quotes.filter { !$0.name.localizedCaseInsensitiveContains(ExtraMarket.acwi.keyword) },
+                        featured: acwi.map { (ExtraMarket.acwi, $0) }
+                    )
                         .padding(.top, 8)
 
                     ViewThatFits(in: .horizontal) {
@@ -133,6 +149,9 @@ struct EditionPage: View {
                 guard let anchor else { return }
                 withAnimation { proxy.scrollTo(anchor, anchor: .top) }
                 anchorHandled()
+            }
+            .task(id: edition.date) {
+                fetchedACWI = await MarketQuotes.quote(.acwi, for: edition.date)
             }
         }
     }

@@ -106,6 +106,8 @@ targets:
       - path: Shared/Fixtures
       - path: CourtCapital/Data/EditionStore.swift
       - path: CourtCapital/Data/EditionCache.swift
+      - path: CourtCapital/Services/MorningNotification.swift
+      - path: CourtCapital/App/Preferences.swift
     settings:
       base:
         PRODUCT_BUNDLE_IDENTIFIER: com.germanndarian.courtcapital.tests

@@ -4,7 +4,9 @@ struct SettingsView: View {
     @AppStorage(Preferences.morningNotification) private var notificationsOn = false
     @AppStorage(Preferences.deliveryMinutes) private var deliveryMinutes = Preferences.defaultDeliveryMinutes
     @AppStorage(Preferences.appearance) private var appearance = Appearance.automatic
+    @AppStorage(Preferences.pausedThrough) private var pausedThrough = ""
     @State private var choosingTime = false
+    @State private var choosingPause = false
     @State private var showDeniedAlert = false
 
     var body: some View {
@@ -50,6 +52,31 @@ struct SettingsView: View {
                 .animation(.easeOut(duration: 0.2), value: notificationsOn)
                 .overlay(alignment: .bottom) { Hairline() }
 
+                Button {
+                    choosingPause = true
+                } label: {
+                    HStack(spacing: 16) {
+                        VStack(alignment: .leading, spacing: 3) {
+                            Text("Take a break")
+                                .typeStyle(.text(17, weight: 500, relativeTo: .body))
+                                .foregroundStyle(Theme.ink)
+                            Text("No edition for a few days")
+                                .typeStyle(.text(13.5, italic: true, lineHeight: 1.35, relativeTo: .footnote))
+                                .foregroundStyle(Theme.inkMuted)
+                        }
+                        .frame(maxWidth: .infinity, alignment: .leading)
+                        Text(pauseSummary)
+                            .typeStyle(.text(16, relativeTo: .body))
+                            .foregroundStyle(isPaused ? Theme.brassText : Theme.inkMuted)
+                        Chevron()
+                    }
+                    .padding(.vertical, 16)
+                    .contentShape(Rectangle())
+                }
+                .buttonStyle(.plain)
+                .overlay(alignment: .bottom) { Hairline() }
+                .accessibilityValue(pauseSummary)
+
                 SettingsSectionHeader(numeral: "II", title: "Appearance")
                     .padding(.top, 34)
                 HStack(spacing: 12) {
@@ -81,15 +108,29 @@ struct SettingsView: View {
             DeliveryTimeSheet(minutes: $deliveryMinutes)
                 .presentationDetents([.height(320)])
         }
-        .onChange(of: deliveryMinutes) { _, minutes in
-            guard notificationsOn else { return }
-            Task { await MorningNotification.schedule(minutesAfterMidnight: minutes) }
+        .sheet(isPresented: $choosingPause) {
+            PauseSheet(pausedThrough: $pausedThrough)
+                .presentationDetents([.height(380)])
+        }
+        .onChange(of: deliveryMinutes) { _, _ in
+            Task { await MorningNotification.refresh() }
+        }
+        .onChange(of: pausedThrough) { _, _ in
+            Task { await MorningNotification.refresh() }
         }
         .alert("Notifications are off", isPresented: $showDeniedAlert) {
             Button("OK", role: .cancel) {}
         } message: {
             Text("Allow notifications for Court & Capital in the Settings app to get the morning edition.")
         }
+    }
+
+    private var isPaused: Bool { EditionPause.isPaused(through: pausedThrough) }
+
+    /// "Off", or "Until 30 Oct" (the last day of the break)
+    private var pauseSummary: String {
+        guard isPaused, let last = EditionCalendar.date(from: pausedThrough) else { return "Off" }
+        return "Until \(EditionFormat.short(last).split(separator: " ").dropFirst().joined(separator: " "))"
     }
 
     /// Turning the notification on asks for permission first and stays off if it is refused.
@@ -99,13 +140,13 @@ struct SettingsView: View {
         } set: { isOn in
             guard isOn else {
                 notificationsOn = false
-                MorningNotification.cancel()
+                Task { await MorningNotification.cancel() }
                 return
             }
             notificationsOn = true
             Task {
                 if await MorningNotification.requestPermission() {
-                    await MorningNotification.schedule(minutesAfterMidnight: deliveryMinutes)
+                    await MorningNotification.refresh()
                 } else {
                     notificationsOn = false
                     showDeniedAlert = true
@@ -296,5 +337,143 @@ private struct DeliveryTimeSheet: View {
             Spacer(minLength: 0)
         }
         .presentationBackground { PaperBackground() }
+    }
+}
+
+/// Choose how many days to go without the edition. The app stays quiet until then: no
+/// morning notification and no "running late" note.
+private struct PauseSheet: View {
+    @Binding var pausedThrough: String
+    @State private var days = 7
+    @Environment(\.dismiss) private var dismiss
+
+    private var isPaused: Bool { EditionPause.isPaused(through: pausedThrough) }
+    private var resume: Date? { EditionPause.resumeDay(after: EditionPause.lastDay(forDays: days)) }
+
+    var body: some View {
+        VStack(spacing: 0) {
+            HStack {
+                Text("Take a break")
+                    .typeStyle(.label(10))
+                    .foregroundStyle(Theme.brassText)
+                Spacer()
+                Button("Close") { dismiss() }
+                    .typeStyle(.label(10))
+                    .foregroundStyle(Theme.ink)
+            }
+            .padding(.top, 20)
+
+            if isPaused, let resumeDay = EditionPause.resumeDay(after: pausedThrough) {
+                Text("On a break")
+                    .typeStyle(.display(30, relativeTo: .title))
+                    .foregroundStyle(Theme.ink)
+                    .padding(.top, 22)
+                Text("The edition is back \(EditionFormat.storyDate(resumeDay)).")
+                    .typeStyle(.text(16, italic: true, relativeTo: .body))
+                    .foregroundStyle(Theme.inkMuted)
+                    .padding(.top, 8)
+                SheetButton(title: "Resume now") {
+                    pausedThrough = ""
+                    dismiss()
+                }
+                .padding(.top, 28)
+            } else {
+                Text("No edition for")
+                    .typeStyle(.display(22, italic: true, relativeTo: .title3))
+                    .foregroundStyle(Theme.inkMuted)
+                    .padding(.top, 18)
+                HStack(spacing: 28) {
+                    RoundButton(symbol: "−", enabled: days > 1) { days -= 1 }
+                    VStack(spacing: 4) {
+                        Text("\(days)")
+                            .typeStyle(.display(48, relativeTo: .largeTitle))
+                            .foregroundStyle(Theme.ink)
+                            .contentTransition(.numericText())
+                        Text(days == 1 ? "day" : "days")
+                            .typeStyle(.label(10))
+                            .foregroundStyle(Theme.inkMuted)
+                    }
+                    .frame(minWidth: 80)
+                    RoundButton(symbol: "+", enabled: days < EditionPause.maxDays) { days += 1 }
+                }
+                .padding(.top, 10)
+                .animation(.snappy, value: days)
+                .sensoryFeedback(.selection, trigger: days)
+                .accessibilityElement()
+                .accessibilityLabel("Days without the edition")
+                .accessibilityValue("\(days)")
+                .accessibilityAdjustableAction { direction in
+                    switch direction {
+                    case .increment: days = min(days + 1, EditionPause.maxDays)
+                    case .decrement: days = max(days - 1, 1)
+                    @unknown default: break
+                    }
+                }
+                if let resume {
+                    Text("Back \(EditionFormat.storyDate(resume)).")
+                        .typeStyle(.text(15, italic: true, relativeTo: .body))
+                        .foregroundStyle(Theme.inkMuted)
+                        .padding(.top, 12)
+                }
+                SheetButton(title: "Start the break") {
+                    pausedThrough = EditionPause.lastDay(forDays: days)
+                    dismiss()
+                }
+                .padding(.top, 22)
+            }
+
+            Text("Your Claude task keeps writing to Notion; the app simply stays quiet. Editions from the break wait in the archive.")
+                .typeStyle(.text(12.5, italic: true, lineHeight: 1.4, relativeTo: .caption))
+                .foregroundStyle(Theme.inkMuted)
+                .multilineTextAlignment(.center)
+                .padding(.top, 18)
+            Spacer(minLength: 0)
+        }
+        .padding(.horizontal, 24)
+        .frame(maxWidth: .infinity)
+        .presentationBackground { PaperBackground() }
+    }
+}
+
+/// A brass ring with a − or +.
+private struct RoundButton: View {
+    let symbol: String
+    let enabled: Bool
+    let action: () -> Void
+
+    var body: some View {
+        Button(action: action) {
+            Text(symbol)
+                .typeStyle(.display(26, relativeTo: nil))
+                .foregroundStyle(Theme.brassText)
+                .frame(width: 48, height: 48)
+                .overlay(Circle().stroke(Theme.brass, lineWidth: 1))
+                .contentShape(Circle())
+        }
+        .buttonStyle(.plain)
+        .disabled(!enabled)
+        .opacity(enabled ? 1 : 0.35)
+        .accessibilityHidden(true)
+    }
+}
+
+/// Letter-spaced caps between double rules, the sheet's main action.
+private struct SheetButton: View {
+    let title: String
+    let action: () -> Void
+
+    var body: some View {
+        Button(action: action) {
+            VStack(spacing: 0) {
+                DoubleRule(color: Theme.brass)
+                Text(title)
+                    .typeStyle(.label(11))
+                    .foregroundStyle(Theme.ink)
+                    .padding(.vertical, 13)
+                DoubleRule(color: Theme.brass, mirrored: true)
+            }
+            .contentShape(Rectangle())
+        }
+        .buttonStyle(PressedRowStyle())
     }
 }

@@ -267,7 +267,7 @@ struct Quote: Sendable, Hashable, Identifiable {
         switch name {
         case "US 10Y": String(format: "%.2f%%", level)
         case "USD/CHF": String(format: "%.4f", level)
-        case "Brent": "$" + level.formatted(.number.precision(.fractionLength(2)).locale(Self.english))
+        case "Brent", ExtraMarket.acwi.name: "$" + level.formatted(.number.precision(.fractionLength(2)).locale(Self.english))
         default: level.formatted(.number.precision(.fractionLength(2)).locale(Self.english))
         }
     }
