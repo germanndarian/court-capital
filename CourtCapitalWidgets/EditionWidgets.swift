@@ -257,13 +257,18 @@ struct MediumEditionView: View {
                         VStack(spacing: 0) {
                             ForEach(edition.widgetQuotes) { market in
                                 HStack(alignment: .firstTextBaseline, spacing: 6) {
+                                    // The figure always shows in full; a long name such as
+                                    // USD/CHF shrinks a little instead.
                                     Text(market.name)
                                         .typeStyle(.label(7.5, tracking: 0.16).fixed)
                                         .foregroundStyle(Theme.inkMuted)
+                                        .minimumScaleFactor(0.6)
                                     Spacer(minLength: 0)
                                     Text(market.changeWithArrow)
                                         .typeStyle(TypeStyle(face: .newsreader, size: 11, weight: 500, tabularFigures: true, relativeTo: nil))
                                         .foregroundStyle(market.direction.color)
+                                        .fixedSize()
+                                        .layoutPriority(1)
                                 }
                                 .lineLimit(1)
                                 .padding(.bottom, 4)
