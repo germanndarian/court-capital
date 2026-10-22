@@ -82,10 +82,10 @@ iPhone app and widgets ── read-only Notion integration ──▶ Court & Cap
 ```
 
 - **Read-only:** the app only reads; it never writes to Notion. Its integration has the *Read content* capability and sees only the pages you share with it.
-- **Finding editions:** the app lists the child pages of Court & Capital whose title starts with "Edition —", newest first. From each one it reads the last JSON code block.
+- **Finding editions:** the app lists the child pages of Court & Capital whose title starts with "Edition", newest first. From each one it reads the code block under the "Data" heading (or inside it, if the heading is a toggle). If a page has no Data heading, it takes the page's last JSON code block instead.
 - **Missing or broken Data block:** that edition is skipped and the app shows the last good one with a short note. Editions written before the Data block existed don't appear in the archive.
-
-> **Status:** reading from Notion isn't finished yet. Until it is, the app shows two bundled sample editions (`Shared/Fixtures`), with a note saying so.
+- **Downloads:** each edition page is downloaded once. It's only downloaded again when Notion says it was edited, including pages that couldn't be read. Requests are spaced about a third of a second apart, under Notion's limit of three a second, and if Notion still answers "too many requests" the app waits as long as Notion asks and tries again.
+- **Before a token is set:** the app shows two bundled sample editions (`Shared/Fixtures`), with a note saying so.
 
 ## Setup
 
@@ -203,16 +203,22 @@ CourtCapital/            the app
   Services/              morning notification
 CourtCapitalWidgets/     Home Screen and Lock Screen widgets
 Shared/                  compiled into both targets
-  Data/                  edition feed (Notion or the samples), Notion settings
+  Data/                  edition feed (Notion or the samples), Notion client and settings
   Fixtures/              two sample editions in the Data block format
   Model/                 edition, edition calendar, archive
   Theme/                 colour tokens, type scale, paper grain, rules, ornaments
   Fonts/                 Playfair Display and Newsreader (SIL OFL)
+Tests/                   Notion client, feed and cache tests, against a fake Notion
 Config/                  build settings; your token goes in Secrets.xcconfig
 Tools/                   app icon and README artwork renderers
 ```
 
 - **Regenerating the project:** after adding or removing Swift files, run `xcodegen generate`.
+- **Tests:** press **⌘U** in Xcode. They never reach the real Notion: every request goes to a fake that runs inside the tests. To run them from the terminal:
+
+  ```bash
+  xcodebuild test -project CourtCapital.xcodeproj -scheme CourtCapital -destination 'platform=iOS Simulator,name=iPhone 17 Pro'
+  ```
 - **Edition numbers** count weekdays since 1 January, so 7 October 2026 is No. CC of Volume I.
 
 ### Deep links

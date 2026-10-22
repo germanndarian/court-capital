@@ -30,6 +30,13 @@ final class StoredEdition {
         guard isReadable, let json, let document = try? EditionDocument.decode(json) else { return nil }
         return Edition(document: document)
     }
+
+    /// Whether the page is unchanged since it was downloaded. Notion rounds edit times down
+    /// to the minute, so a page checked within a minute of its last edit may have changed
+    /// without its time moving: that one is checked again.
+    func isCurrent(for page: EditionPageRef) -> Bool {
+        lastEditedTime >= page.lastEditedTime && checkedAt >= lastEditedTime.addingTimeInterval(60)
+    }
 }
 
 enum EditionCache {

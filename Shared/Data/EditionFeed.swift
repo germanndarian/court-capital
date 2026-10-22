@@ -56,8 +56,8 @@ struct SampleFeed: EditionFeed {
 enum EditionFeeds {
     /// Notion when it's configured in Config/Secrets.xcconfig, otherwise the samples.
     static func current() -> any EditionFeed {
-        // Phase 2 switches this to Notion when NotionConfig.current is set.
-        SampleFeed()
+        guard let config = NotionConfig.current else { return SampleFeed() }
+        return NotionFeed(config: config)
     }
 
     static var isSample: Bool { NotionConfig.current == nil }

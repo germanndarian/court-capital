@@ -81,7 +81,18 @@ final class EditionStore {
 
             // Newest first, so today's edition shows up before the archive fills in.
             for page in pages {
-                if let record = stored[page.id], record.lastEditedTime >= page.lastEditedTime { continue }
+                if let record = stored[page.id], record.isCurrent(for: page) { continue }
+                let checkedAt = Date.now
+                // Download first: if this throws (no network, Notion down), the page stays as
+                // it was and is tried again on the next sync.
+                var readable: (json: Data, date: String)?
+                do {
+                    if let data = try await feed.documentData(for: page) {
+                        let document = try EditionDocument.decode(data)
+                        readable = (data, document.date)
+                    }
+                } catch is DecodingError {}
+
                 let record = stored[page.id] ?? {
                     let record = StoredEdition(page: page)
                     context.insert(record)
@@ -90,21 +101,10 @@ final class EditionStore {
                 record.title = page.title
                 record.createdTime = page.createdTime
                 record.lastEditedTime = page.lastEditedTime
-                record.checkedAt = .now
-                do {
-                    if let data = try await feed.documentData(for: page) {
-                        let document = try EditionDocument.decode(data)
-                        record.json = data
-                        record.date = document.date
-                        record.isReadable = true
-                    } else {
-                        record.json = nil
-                        record.isReadable = false
-                    }
-                } catch is DecodingError {
-                    record.json = nil
-                    record.isReadable = false
-                }
+                record.checkedAt = checkedAt
+                record.json = readable?.json
+                record.isReadable = readable != nil
+                if let readable { record.date = readable.date }
                 try? context.save()
                 loadCache()
             }
