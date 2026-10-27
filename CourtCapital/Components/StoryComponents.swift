@@ -1,11 +1,21 @@
 import SafariServices
 import SwiftUI
 
-/// "‹ Today · C&C · No. CC" over a hairline.
+/// "‹ Today · C&C · No. CC" over a hairline. A file shows "Day XII" on the right instead.
 struct StoryTopBar: View {
     var backTitle = "Today"
-    let editionNumber: Int
+    let trailing: String
     let back: () -> Void
+
+    init(backTitle: String = "Today", editionNumber: Int, back: @escaping () -> Void) {
+        self.init(backTitle: backTitle, trailing: "No. \(Roman.numeral(editionNumber))", back: back)
+    }
+
+    init(backTitle: String = "Today", trailing: String, back: @escaping () -> Void) {
+        self.backTitle = backTitle
+        self.trailing = trailing
+        self.back = back
+    }
 
     var body: some View {
         HStack {
@@ -33,7 +43,7 @@ struct StoryTopBar: View {
                 .accessibilityHidden(true)
             Spacer(minLength: 0)
 
-            Text("No. \(Roman.numeral(editionNumber))")
+            Text(trailing)
                 .typeStyle(.label(9.5, tracking: 0.2))
                 .foregroundStyle(Theme.inkMuted)
                 .frame(minWidth: 80, alignment: .trailing)

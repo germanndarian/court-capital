@@ -2,12 +2,16 @@ import SwiftUI
 
 struct RootView: View {
     @Environment(AppModel.self) private var model
+    @Environment(EditionStore.self) private var store
+    @Environment(DocketStore.self) private var docket
 
     var body: some View {
         @Bindable var model = model
         ZStack {
             TodayTab()
                 .tabContent(visible: model.tab == .today)
+            DocketTab()
+                .tabContent(visible: model.tab == .docket)
             ArchiveTab()
                 .tabContent(visible: model.tab == .archive)
             SettingsView()
@@ -15,12 +19,30 @@ struct RootView: View {
         }
         .safeAreaInset(edge: .bottom, spacing: 0) {
             if !model.isReadingStory {
-                EditionTabBar(selection: $model.tab)
+                EditionTabBar(selection: $model.tab, marked: docket.filesWithNews.isEmpty ? [] : [.docket])
                     .transition(.move(edge: .bottom))
             }
         }
+        .overlay(alignment: .top) {
+            if let toast = model.toast {
+                Toast(text: toast)
+                    .padding(.top, 6)
+                    .transition(.move(edge: .top).combined(with: .opacity))
+            }
+        }
         .animation(.easeInOut(duration: 0.25), value: model.isReadingStory)
+        .animation(.snappy, value: model.toast)
         .background(PaperBackground(glow: true).ignoresSafeArea())
+        .sheet(item: $model.draft) { draft in
+            FileEditorSheet(draft: draft)
+        }
+        // The docket's records come from the editions, so they follow every sync.
+        .onChange(of: store.editions, initial: true) { _, editions in
+            docket.update(editions: editions)
+        }
+        .onChange(of: docket.files) { _, files in
+            Task { await DocketReminders.refresh(files) }
+        }
     }
 }
 
@@ -53,6 +75,26 @@ struct ArchiveTab: View {
                         ArchivedEditionView(date: date)
                     case .story(let story):
                         StoryDestination(route: story, backTitle: "Edition") { model.archivePath.removeLast() }
+                    }
+                }
+        }
+    }
+}
+
+struct DocketTab: View {
+    @Environment(AppModel.self) private var model
+
+    var body: some View {
+        @Bindable var model = model
+        NavigationStack(path: $model.docketPath) {
+            DocketView()
+                .toolbar(.hidden, for: .navigationBar)
+                .navigationDestination(for: DocketRoute.self) { route in
+                    switch route {
+                    case .file(let id):
+                        DocketFileView(fileID: id)
+                    case .story(let story):
+                        StoryDestination(route: story, backTitle: "File") { model.docketPath.removeLast() }
                     }
                 }
         }

@@ -458,7 +458,7 @@ private struct RoundButton: View {
 }
 
 /// Letter-spaced caps between double rules, the sheet's main action.
-private struct SheetButton: View {
+struct SheetButton: View {
     let title: String
     let action: () -> Void
 

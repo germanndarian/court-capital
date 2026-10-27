@@ -52,8 +52,10 @@ struct StoryView: View {
                     .padding(.top, 26)
                 SourceList(sources: story.sources) { openSource = IdentifiableURL(url: $0) }
                     .padding(.top, 32)
+                FollowStoryButton(story: story, edition: edition)
+                    .padding(.top, 32)
                 ShareStoryButton(text: StoryShare.text(story, in: edition))
-                    .padding(.top, 28)
+                    .padding(.top, 14)
 
                 Crest(diameter: 28, monogram: 9)
                     .frame(maxWidth: .infinity)

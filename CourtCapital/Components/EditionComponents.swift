@@ -172,20 +172,29 @@ struct SectionHeader: View {
     }
 }
 
-/// A headline with its region tag and chevron. Pressing fills the row with paper inset.
+/// A headline with its region tag and chevron. Pressing fills the row with paper inset. A story
+/// on your Docket carries its file's name under the headline.
 struct StoryRow: View {
     let story: Story
     let edition: Edition
     let action: () -> Void
+    @Environment(AppModel.self) private var model
+    @Environment(DocketStore.self) private var docket
 
     var body: some View {
+        let files = docket.files(following: story, on: edition.date)
         Button(action: action) {
             HStack(alignment: .top, spacing: 14) {
-                Text(story.headline)
-                    .typeStyle(.rowHeadline)
-                    .foregroundStyle(Theme.ink)
-                    .multilineTextAlignment(.leading)
-                    .frame(maxWidth: .infinity, alignment: .leading)
+                VStack(alignment: .leading, spacing: 7) {
+                    Text(story.headline)
+                        .typeStyle(.rowHeadline)
+                        .foregroundStyle(Theme.ink)
+                        .multilineTextAlignment(.leading)
+                    ForEach(files) { file in
+                        DocketMarker(file: file)
+                    }
+                }
+                .frame(maxWidth: .infinity, alignment: .leading)
                 VStack(alignment: .trailing, spacing: 9) {
                     RegionTag(region: story.region)
                     Chevron()
@@ -198,6 +207,20 @@ struct StoryRow: View {
         }
         .buttonStyle(PressedRowStyle())
         .contextMenu {
+            if files.isEmpty {
+                Button {
+                    model.follow(story, in: edition)
+                } label: {
+                    Label("Follow on the Docket", systemImage: "folder.badge.plus")
+                }
+            }
+            ForEach(files) { file in
+                Button {
+                    model.openFile(file.id)
+                } label: {
+                    Label("Open “\(file.title)”", systemImage: "folder")
+                }
+            }
             ShareLink(item: StoryShare.text(story, in: edition)) {
                 Label("Share Story", systemImage: "square.and.arrow.up")
             }
