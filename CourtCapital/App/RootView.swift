@@ -7,17 +7,20 @@ struct RootView: View {
 
     var body: some View {
         @Bindable var model = model
-        ZStack {
-            TodayTab()
-                .tabContent(visible: model.tab == .today)
-            DocketTab()
-                .tabContent(visible: model.tab == .docket)
-            ArchiveTab()
-                .tabContent(visible: model.tab == .archive)
-            SettingsView()
-                .tabContent(visible: model.tab == .settings)
-        }
-        .safeAreaInset(edge: .bottom, spacing: 0) {
+        // The tab bar sits below the tabs rather than over them: a bottom safe-area inset
+        // doesn't reach the scroll views inside the navigation stacks, so the end of each
+        // page would stay hidden behind the bar.
+        VStack(spacing: 0) {
+            ZStack {
+                TodayTab()
+                    .tabContent(visible: model.tab == .today)
+                DocketTab()
+                    .tabContent(visible: model.tab == .docket)
+                ArchiveTab()
+                    .tabContent(visible: model.tab == .archive)
+                SettingsView()
+                    .tabContent(visible: model.tab == .settings)
+            }
             if !model.isReadingStory {
                 EditionTabBar(selection: $model.tab, marked: docket.filesWithNews.isEmpty ? [] : [.docket])
                     .transition(.move(edge: .bottom))

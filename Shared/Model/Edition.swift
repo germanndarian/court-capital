@@ -10,6 +10,8 @@ struct EditionDocument: Codable, Sendable, Hashable {
     let bigStory: String
     var markets: [MarketDocument]?
     let sections: [SectionDocument]
+    /// Written by the task but never shown: the app prints its own footer, so nothing on
+    /// screen says how the edition was made.
     var footer: String?
 
     struct MarketDocument: Codable, Sendable, Hashable {
@@ -59,7 +61,6 @@ struct Edition: Sendable, Identifiable, Hashable {
     let markets: Markets
     let sections: [EditionSection]
     let readingMinutes: Int
-    let footer: String
 
     var id: String { date }
 
@@ -79,7 +80,6 @@ struct Edition: Sendable, Identifiable, Hashable {
         date = document.date
         number = EditionCalendar.editionNumber(for: document.date)
         volume = EditionCalendar.volume(for: document.date)
-        footer = document.footer ?? "compiled by Claude from public reporting · not financial or legal advice"
 
         sections = document.sections.enumerated().map { sectionIndex, section in
             EditionSection(

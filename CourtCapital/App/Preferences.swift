@@ -8,8 +8,8 @@ enum Preferences {
     /// The last day of a break from the edition (YYYY-MM-DD), or empty
     static let pausedThrough = "pausedThrough"
 
-    /// 05:30: the task writes around 05:00 and needs a few minutes.
-    static let defaultDeliveryMinutes = 5 * 60 + 30
+    /// When the edition is ready: the task starts writing at about 03:52 and takes 10–15 minutes.
+    static let defaultDeliveryMinutes = EditionCalendar.readyHour * 60 + EditionCalendar.readyMinute
 }
 
 enum Appearance: String, CaseIterable, Identifiable {

@@ -422,7 +422,7 @@ private struct PauseSheet: View {
                 .padding(.top, 22)
             }
 
-            Text("Your Claude task keeps writing to Notion; the app simply stays quiet. Editions from the break wait in the archive.")
+            Text("New editions keep arriving; the app simply stays quiet. Editions from the break wait in the archive.")
                 .typeStyle(.text(12.5, italic: true, lineHeight: 1.4, relativeTo: .caption))
                 .foregroundStyle(Theme.inkMuted)
                 .multilineTextAlignment(.center)

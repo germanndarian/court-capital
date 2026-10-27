@@ -48,7 +48,7 @@ struct FileEditorSheet: View {
 
                 EditorLabel(title: "Name")
                     .padding(.top, 24)
-                TextField("Name", text: $draft.file.title, prompt: Text(suggestedTitle.isEmpty ? "Anthropic IPO" : suggestedTitle).foregroundStyle(Theme.inkMuted.opacity(0.6)))
+                TextField("Name", text: $draft.file.title, prompt: Text(suggestedTitle.isEmpty ? "SpaceX & Tesla" : suggestedTitle).foregroundStyle(Theme.inkMuted.opacity(0.6)))
                     .typeStyle(.display(24, relativeTo: .title2))
                     .foregroundStyle(Theme.ink)
                     .submitLabel(.done)
@@ -74,7 +74,7 @@ struct FileEditorSheet: View {
                     .animation(.snappy, value: file.keywords)
                 }
                 HStack(spacing: 10) {
-                    TextField("Add", text: $newWord, prompt: Text(draft.suggestions.isEmpty ? "A name or word, such as Anthropic" : "Add a name or word").foregroundStyle(Theme.inkMuted.opacity(0.7)))
+                    TextField("Add", text: $newWord, prompt: Text(draft.suggestions.isEmpty ? "A name or word, such as SpaceX" : "Add a name or word").foregroundStyle(Theme.inkMuted.opacity(0.7)))
                         .typeStyle(.text(16, relativeTo: .body))
                         .foregroundStyle(Theme.ink)
                         .focused($addingWord)
