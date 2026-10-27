@@ -22,7 +22,7 @@ struct FileEditorSheet: View {
         return draft.suggestions + file.keywords.filter { !folded.contains(DocketMatcher.fold($0)) }
     }
 
-    private var suggestedTitle: String { DocketSuggestions.title(for: file.keywords) }
+    private var suggestedTitle: String { docket.suggestedTitle(for: file) }
 
     var body: some View {
         ScrollView {
@@ -74,7 +74,7 @@ struct FileEditorSheet: View {
                     .animation(.snappy, value: file.keywords)
                 }
                 HStack(spacing: 10) {
-                    TextField("Add", text: $newWord, prompt: Text(draft.suggestions.isEmpty ? "A name or word, such as SpaceX" : "Add a name or word").foregroundStyle(Theme.inkMuted.opacity(0.7)))
+                    TextField("Add", text: $newWord, prompt: Text(draft.suggestions.isEmpty ? "A name or topic, such as SpaceX merger" : "Add a name or topic").foregroundStyle(Theme.inkMuted.opacity(0.7)))
                         .typeStyle(.text(16, relativeTo: .body))
                         .foregroundStyle(Theme.ink)
                         .focused($addingWord)
@@ -96,7 +96,28 @@ struct FileEditorSheet: View {
                         .padding(.top, 16)
                 }
 
-                MatchPreview(entries: docket.preview(keywords: file.keywords, match: file.match), hasWords: !file.keywords.isEmpty)
+                let queries = docket.queries(for: file)
+                if !file.exactWords, queries.contains(where: \.isUnderstood) {
+                    TopicReading(queries: queries)
+                        .padding(.top, 16)
+                }
+
+                Toggle(isOn: similarWording) {
+                    VStack(alignment: .leading, spacing: 3) {
+                        Text("Similar wording")
+                            .typeStyle(.text(17, weight: 500, relativeTo: .body))
+                            .foregroundStyle(Theme.ink)
+                        Text("Also finds a listing for an IPO, Alphabet for Google")
+                            .typeStyle(.text(13.5, italic: true, lineHeight: 1.35, relativeTo: .footnote))
+                            .foregroundStyle(Theme.inkMuted)
+                    }
+                }
+                .toggleStyle(BrassToggleStyle())
+                .padding(.vertical, 14)
+                .overlay(alignment: .bottom) { Hairline() }
+                .padding(.top, 8)
+
+                MatchPreview(entries: docket.preview(for: file), hasWords: !file.keywords.isEmpty)
                     .padding(.top, 14)
 
                 EditorLabel(title: "Binding")
@@ -193,11 +214,21 @@ struct FileEditorSheet: View {
         }
     }
 
+    /// A typed phrase the matcher understands is spelled the editions' way: "Anthropic IPO".
     private func addWord() {
-        let word = newWord.trimmingCharacters(in: .whitespacesAndNewlines)
+        let typed = newWord.trimmingCharacters(in: .whitespacesAndNewlines)
+        let word = TopicQuery.read(typed, vocabulary: docket.vocabulary, exact: file.exactWords).tidied
         newWord = ""
         guard !word.isEmpty, !isChosen(word) else { return }
         draft.file.keywords.append(word)
+    }
+
+    private var similarWording: Binding<Bool> {
+        Binding {
+            !draft.file.exactWords
+        } set: { isOn in
+            draft.file.exactWords = !isOn
+        }
     }
 
     // MARK: Date to watch
@@ -237,7 +268,7 @@ struct FileEditorSheet: View {
         addWord()
         var file = draft.file
         file.title = file.title.trimmingCharacters(in: .whitespacesAndNewlines)
-        if file.title.isEmpty { file.title = DocketSuggestions.title(for: file.keywords) }
+        if file.title.isEmpty { file.title = docket.suggestedTitle(for: file) }
         file.note = file.note.trimmingCharacters(in: .whitespacesAndNewlines)
         if let label = file.keyDate?.label {
             file.keyDate?.label = label.trimmingCharacters(in: .whitespacesAndNewlines)

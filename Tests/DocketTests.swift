@@ -51,7 +51,10 @@ struct DocketTests {
         let story = try #require(oct08.stories.first { $0.headline.hasPrefix("AI chip debt") })
         let draft = FileDraft.new(from: story, editionDate: oct08.date, seenThrough: oct08.date, today: "2026-10-08")
         #expect(draft.isNew)
-        #expect(draft.file.keywords == ["SpaceX", "Nvidia"])
+        // The parties in the headline, then the first topic it's about.
+        #expect(draft.file.keywords == ["SpaceX", "Nvidia", "chips"])
+        #expect(draft.suggestions.contains("chips"))
+        #expect(DocketSuggestions.title(for: draft.file.keywords) == "SpaceX & Nvidia chips")
         #expect(draft.file.title.isEmpty)
         #expect(draft.file.origin == TrackedFile.Origin(editionDate: "2026-10-08", headline: story.headline))
     }
@@ -210,6 +213,99 @@ struct DocketTests {
         let file = try JSONDecoder().decode(TrackedFile.self, from: json)
         #expect(file.match == .all)
         #expect(file.cover == .navy)
-        #expect(file.note.isEmpty && file.keyDate == nil && !file.isPinned && !file.isClosed)
+        #expect(file.note.isEmpty && file.keyDate == nil && !file.isPinned && !file.isClosed && !file.exactWords)
+    }
+}
+
+/// Reading a file's words as a topic: phrases split into names and topics, other wordings of
+/// the same topic, and names the Who's who ties together.
+@Suite("Topic matching")
+struct TopicMatchingTests {
+    private let oct08 = Edition(document: try! EditionDocument.decode(Fixture.edition("2026-10-08")))
+
+    /// An edition with stories made up for the test.
+    private func edition(_ date: String, _ stories: [(headline: String, whosWho: String, body: String)]) -> Edition {
+        let object: [String: Any] = [
+            "date": date,
+            "big_story": stories[0].headline,
+            "sections": [[
+                "numeral": "I", "title": "Corporate Law",
+                "stories": stories.map { ["headline": $0.headline, "region": "US", "whos_who": $0.whosWho, "body": $0.body] },
+            ]],
+        ]
+        return Edition(document: try! EditionDocument.decode(JSONSerialization.data(withJSONObject: object)))
+    }
+
+    private var anthropicWeek: Edition {
+        edition("2026-11-03", [
+            ("Anthropic files for Nasdaq IPO", "Anthropic = US AI lab · S-1 = the prospectus filed before an IPO", "Anthropic filed its S-1."),
+            ("Claude maker prices its listing at $250 a share", "Claude = Anthropic's AI assistant", "The shares start trading on Nasdaq on Thursday."),
+            ("Anthropic releases a new model", "Claude = Anthropic's AI assistant", "The model is faster."),
+        ])
+    }
+
+    private func read(_ keyword: String, in editions: [Edition], exact: Bool = false) -> TopicQuery {
+        TopicQuery.read(keyword, vocabulary: TopicVocabulary(stories: editions.flatMap(\.stories)), exact: exact)
+    }
+
+    @Test("Splits a phrase into the names and topics it knows")
+    func splitsPhrases() {
+        let query = read("anthropic ipo", in: [anthropicWeek])
+        #expect(query.parts.map(\.label) == ["Anthropic", "IPO"])
+        #expect(query.parts[0].alternatives == ["Claude"])
+        #expect(query.parts[1].alternatives.prefix(3) == ["listing", "S-1", "roadshow"])
+        #expect(read("SpaceX Tesla merger", in: [oct08]).parts.map(\.label) == ["SpaceX", "Tesla", "merger"])
+    }
+
+    @Test("Keeps names it knows, and phrases it doesn't understand, whole")
+    func keepsPhrases() {
+        #expect(read("State Street", in: [oct08]).parts.map(\.label) == ["State Street"])
+        let wallStreet = read("Wall Street", in: [oct08])
+        #expect(wallStreet.parts.map(\.label) == ["Wall Street"] && !wallStreet.isUnderstood)
+        #expect(read("anthropic ipo", in: [anthropicWeek], exact: true).parts.map(\.label) == ["anthropic ipo"])
+    }
+
+    @Test("Finds the same topic in other words, and says which")
+    func otherWordings() {
+        let query = read("Anthropic IPO", in: [anthropicWeek])
+        let listing = DocketMatcher.fold("Claude maker prices its listing at $250 a share")
+        #expect(query.matches(listing))
+        #expect(query.foundThrough(listing) == ["Claude", "listing"])
+        #expect(!query.matches(DocketMatcher.fold("Anthropic releases a new model, Claude 5")))
+        #expect(query.foundThrough(DocketMatcher.fold("Anthropic files for Nasdaq IPO")).isEmpty)
+    }
+
+    @Test("Learns from the Who's who whose names belong to whom")
+    func owners() {
+        #expect(TopicVocabulary.owners(in: "Saudi Arabia's state oil company").contains("saudi arabia"))
+        #expect(TopicVocabulary.owners(in: "Musk's rocket company, listed since June") == ["musk"])
+        #expect(TopicVocabulary.owners(in: "independent body electing most of its board").isEmpty)
+        let vocabulary = TopicVocabulary(stories: oct08.stories)
+        #expect(vocabulary.owned["openai"] == ["GPT-6 Sol", "Luna"])
+    }
+
+    @Test("Spots the topic of a headline and names the file after it")
+    func headlineTopics() {
+        #expect(TopicLexicon.concepts(in: "Anthropic files for Nasdaq IPO with a share structure") == ["IPO"])
+        #expect(TopicLexicon.concepts(in: "PlayPower and BCI Burke drop their merger after the FTC sues to block it") == ["merger", "lawsuit"])
+        #expect(DocketSuggestions.title(for: ["Anthropic", "IPO"]) == "Anthropic IPO")
+        #expect(DocketSuggestions.title(for: ["SpaceX", "Tesla", "merger"]) == "SpaceX & Tesla merger")
+    }
+
+    @MainActor
+    @Test("A file on a topic keeps the whole saga, and exact words keep it literal")
+    func store() throws {
+        let docket = DocketStore(url: nil)
+        docket.update(editions: [anthropicWeek])
+        let ipo = TrackedFile(title: "Anthropic IPO", keywords: ["anthropic ipo"], openedOn: "2026-11-03", seenThrough: "2026-11-03")
+        docket.save(ipo)
+        let record = docket.record(for: ipo.id)
+        #expect(record.map(\.story.headline) == ["Anthropic files for Nasdaq IPO", "Claude maker prices its listing at $250 a share"])
+        // Its Who's who says "Anthropic's", so only the IPO was found in other words.
+        #expect(docket.foundThrough(record[1], for: ipo) == ["listing"])
+
+        var exact = ipo
+        exact.exactWords = true
+        #expect(docket.preview(for: exact).isEmpty)
     }
 }

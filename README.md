@@ -193,7 +193,16 @@ The iShares MSCI ACWI UCITS ETF USD (Acc) (ISIN IE00B6R52259) isn't in the editi
 
 ### The Docket
 
-A file follows a few names or words, such as *Anthropic* and *IPO*. A story belongs on it when it mentions all of them, or any one if you choose *Any one*. Matching looks at the headline, the body, *Why it matters*, *In plain words* and the Who's who. It ignores case and accents and only counts whole words, so *Meta* finds "Meta's" but not "metadata". The records are worked out on the iPhone from the editions it has saved, so a new file fills with earlier coverage at once, and each morning's edition joins it as soon as it's downloaded.
+A file follows a topic, such as *SpaceX Tesla merger*. A story belongs on it when it mentions all of the file's words, or any one if you choose *Any one*. Matching looks at the headline, the body, *Why it matters*, *In plain words* and the Who's who. It ignores case and accents and only counts whole words, so *Meta* finds "Meta's" but not "metadata". The records are worked out on the iPhone from the editions it has saved, so a new file fills with earlier coverage at once, and each morning's edition joins it as soon as it's downloaded.
+
+Files read their words as a topic, not just letter for letter. With **Similar wording** on, which is the default:
+
+- **Phrases are split** into the names and topics in them. *SpaceX Tesla merger* finds a story that says "a possible SpaceX merger" in a Tesla earnings report, wherever the three appear. A phrase it doesn't understand, like *Wall Street*, stays a phrase.
+- **Topics count in other words.** An IPO is also a listing, an S-1 or a roadshow; a merger is also a takeover, an acquisition or a deal; antitrust is also a monopoly case. The list covers about 25 topics from law and finance, in `CourtCapital/Data/DocketTopics.swift`.
+- **Names come with their relatives.** Regulators and companies have their other names (the Fed is the Federal Reserve and the FOMC; Google is Alphabet). The Who's who teaches the rest: "Copilot = Microsoft's AI assistant" means a Microsoft file also finds stories about Copilot.
+- **It shows its reasoning.** Under the file's words, a line says how they're read, such as *Google (or Alphabet) + antitrust (or monopoly, competition regulator…)*, and a story found through another word says so: *Found through "monopoly"*.
+
+Turn Similar wording off in a file to match its words exactly as typed.
 
 - **On Today:** stories on your Docket carry the file's name under the headline, and an *On your Docket* block lists the files that moved in today's edition. The Docket tab gets a burgundy dot while a file has stories you haven't seen yet.
 - **A date to watch:** a hearing or a listing, counted down on the file, with a notification that morning at the delivery time (if notifications are allowed).
