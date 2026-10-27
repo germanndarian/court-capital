@@ -29,6 +29,7 @@ Every weekday around 05:00 Zürich time, a Claude scheduled task researches the 
 | --- | --- |
 | **Today** | The masthead with Volume and edition number in Roman numerals, The Big Story, the markets at the previous close with your iShares MSCI ACWI ETF underneath, and the day's stories by section, each tagged by region. Pull down to refresh. |
 | **The story** | Who's who, the facts with a brass drop cap, *Why it matters*, *In plain words*, sources that open in Safari, and a share button. |
+| **The Docket** | The stories you follow over weeks, like a merger in talks or an IPO. Tap *Follow this story* at the end of a story, or long-press a headline, and choose the names to follow. Each file, bound in navy, green or burgundy leather, keeps the record of every edition that mentions them, earlier ones included. It shows four weeks of coverage, a countdown to a date you're watching and your notes, and marks new stories in burgundy. |
 | **The Archive** | Every published edition, bound by month as leather volumes on a shelf. Pull a volume to read its ledger; tap a row to open that edition. |
 | **Settings** | The weekday morning notification and its delivery time, a break of any number of days, plus Day, Night or Automatic. |
 | **Widgets** | Small and medium on the Home Screen; rectangular, circular and inline on the Lock Screen. |
@@ -190,6 +191,15 @@ The iShares MSCI ACWI UCITS ETF USD (Acc) (ISIN IE00B6R52259) isn't in the editi
 
 **Settings → Take a break** pauses the edition for any number of days, up to 60. During the break there's no morning notification, Today says when the edition is back instead of warning that it's late, and the break ends on its own. The app can't stop your Claude scheduled task, so editions written during a break still appear in the archive. To stop the task itself, pause it in Claude.
 
+### The Docket
+
+A file follows a few names or words, such as *Anthropic* and *IPO*. A story belongs on it when it mentions all of them, or any one if you choose *Any one*. Matching looks at the headline, the body, *Why it matters*, *In plain words* and the Who's who. It ignores case and accents and only counts whole words, so *Meta* finds "Meta's" but not "metadata". The records are worked out on the iPhone from the editions it has saved, so a new file fills with earlier coverage at once, and each morning's edition joins it as soon as it's downloaded.
+
+- **On Today:** stories on your Docket carry the file's name under the headline, and an *On your Docket* block lists the files that moved in today's edition. The Docket tab gets a burgundy dot while a file has stories you haven't seen yet.
+- **A date to watch:** a hearing or a listing, counted down on the file, with a notification that morning at the delivery time (if notifications are allowed).
+- **Closing a case** keeps the file and its record but takes it off Today; **removing** it deletes the file. The stories stay in the archive either way.
+- **Where it's kept:** `docket.json` in the app's Application Support folder, on the iPhone only. Like everything else, nothing is written to Notion. If the file ever can't be read, it's set aside as `docket-unreadable-….json` instead of being overwritten.
+
 ### What a paid developer account ($99/year) would add
 
 | Feature | Free account | Paid account |
@@ -205,10 +215,10 @@ The iShares MSCI ACWI UCITS ETF USD (Acc) (ISIN IE00B6R52259) isn't in the editi
 ```
 CourtCapital/            the app
   App/                   entry point, navigation, appearance, deep links
-  Data/                  SwiftData cache, edition store, background refresh
-  Screens/               Today, Story, Archive, Settings
+  Data/                  SwiftData cache, edition store, the Docket, background refresh
+  Screens/               Today, Story, Docket, Archive, Settings
   Components/            masthead, markets strip, story rows, drop cap, tab bar
-  Services/              morning notification
+  Services/              morning notification, Docket reminders
 CourtCapitalWidgets/     Home Screen and Lock Screen widgets
 Shared/                  compiled into both targets
   Data/                  edition feed (Notion or the samples), Notion client and settings
@@ -216,7 +226,7 @@ Shared/                  compiled into both targets
   Model/                 edition, edition calendar, archive
   Theme/                 colour tokens, type scale, paper grain, rules, ornaments
   Fonts/                 Playfair Display and Newsreader (SIL OFL)
-Tests/                   Notion client, feed and cache tests, against a fake Notion
+Tests/                   Notion client, feed, cache and Docket tests, against a fake Notion
 Config/                  build settings; your token goes in Secrets.xcconfig
 Tools/                   app icon and README artwork renderers
 ```
@@ -236,6 +246,7 @@ Tools/                   app icon and README artwork renderers
 | `courtcapital://today` | The edition |
 | `courtcapital://today/markets` | The edition, at the markets strip |
 | `courtcapital://story/<id>` | A story in today's edition |
+| `courtcapital://docket` | The Docket |
 
 ### Regenerating the artwork
 

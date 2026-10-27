@@ -51,6 +51,8 @@ struct EditionPage: View {
     let openStory: (Story.ID) -> Void
     var anchorHandled: () -> Void = {}
     @State private var fetchedACWI: Quote?
+    @Environment(AppModel.self) private var model
+    @Environment(DocketStore.self) private var docket
 
     private var acwi: Quote? {
         MarketQuotes.quote(.acwi, in: edition, fetched: fetchedACWI ?? MarketQuotes.cached(.acwi, for: edition.date))
@@ -122,6 +124,14 @@ struct EditionPage: View {
                     .foregroundStyle(Theme.inkMuted)
                     .padding(.top, 22)
                     .accessibilityElement(children: .combine)
+
+                    if isToday {
+                        let moved = docket.movement(in: edition)
+                        if !moved.isEmpty {
+                            DocketBriefing(items: moved) { model.openFile($0) }
+                                .padding(.top, 30)
+                        }
+                    }
 
                     ForEach(edition.sections) { section in
                         VStack(spacing: 0) {
