@@ -12,6 +12,9 @@ struct TrackedFile: Codable, Sendable, Hashable, Identifiable {
     var title: String
     var keywords: [String]
     var match = Match.all
+    /// Only the words as typed. Off by default: the file also finds other wordings of the
+    /// same topic ("listing" for an IPO) and the names the Who's who ties to it.
+    var exactWords = false
     var cover = Cover.navy
     var note = ""
     var keyDate: KeyDate?
@@ -60,6 +63,7 @@ extension TrackedFile {
         title = try container.decode(String.self, forKey: .title)
         keywords = try container.decode([String].self, forKey: .keywords)
         match = (try? container.decodeIfPresent(Match.self, forKey: .match)) ?? .all
+        exactWords = try container.decodeIfPresent(Bool.self, forKey: .exactWords) ?? false
         cover = (try? container.decodeIfPresent(Cover.self, forKey: .cover)) ?? .navy
         note = try container.decodeIfPresent(String.self, forKey: .note) ?? ""
         keyDate = try? container.decodeIfPresent(KeyDate.self, forKey: .keyDate)
@@ -147,6 +151,15 @@ enum DocketMatcher {
         }
     }
 
+    /// Whether folded `text` matches the file's words as the matcher reads them.
+    static func matches(_ text: String, queries: [TopicQuery], match: TrackedFile.Match) -> Bool {
+        guard !queries.isEmpty else { return false }
+        return switch match {
+        case .all: queries.allSatisfy { $0.matches(text) }
+        case .any: queries.contains { $0.matches(text) }
+        }
+    }
+
     /// Whether folded `word` appears in folded `text` as a whole word, or with a plural "s".
     static func mentions(_ text: String, _ word: String) -> Bool {
         var start = text.startIndex
@@ -185,25 +198,37 @@ enum DocketSuggestions {
     static func names(in story: Story) -> [String] {
         var seen = Set<String>()
         return story.whosWho
-            .flatMap { $0.name.components(separatedBy: CharacterSet(charactersIn: ",/")) }
+            .flatMap { split($0.name) }
+            .filter { seen.insert(DocketMatcher.fold($0)).inserted }
+    }
+
+    /// One Who's who entry can name several: "Microsoft, Alphabet, Amazon".
+    static func split(_ name: String) -> [String] {
+        name.components(separatedBy: CharacterSet(charactersIn: ",/"))
             .map { $0.trimmingCharacters(in: .whitespaces) }
-            .filter { !$0.isEmpty && seen.insert(DocketMatcher.fold($0)).inserted }
+            .filter { !$0.isEmpty }
     }
 
     /// The names the headline itself mentions, at most two: usually the parties to the
-    /// story. If the headline names none of them, the first one.
+    /// story. If the headline names none of them, the first one. Then the first topic the
+    /// headline is about, if it has one: "Anthropic" and "IPO".
     static func chosen(from names: [String], headline: String) -> [String] {
         let folded = DocketMatcher.fold(headline)
         let inHeadline = names.filter { DocketMatcher.mentions(folded, DocketMatcher.fold($0)) }
-        return inHeadline.isEmpty ? Array(names.prefix(1)) : Array(inHeadline.prefix(2))
+        let parties = inHeadline.isEmpty ? Array(names.prefix(1)) : Array(inHeadline.prefix(2))
+        return parties + TopicLexicon.concepts(in: headline).prefix(1)
     }
 
-    /// "SpaceX", "SpaceX & Tesla", "SpaceX, Tesla & xAI"
+    /// "SpaceX", "SpaceX & Tesla", "SpaceX, Tesla & xAI", and a topic after the names:
+    /// "SpaceX & Tesla merger", "Anthropic IPO".
     static func title(for keywords: [String]) -> String {
-        let words = keywords.prefix(3).map { $0.trimmingCharacters(in: .whitespaces) }.filter { !$0.isEmpty }
-        guard let last = words.last else { return "" }
-        guard words.count > 1 else { return last }
-        return words.dropLast().joined(separator: ", ") + " & " + last
+        let words = keywords.map { $0.trimmingCharacters(in: .whitespaces) }.filter { !$0.isEmpty }
+        let topics = words.filter { TopicLexicon.concept(DocketMatcher.fold($0)) != nil }
+        let names = Array(words.filter { TopicLexicon.concept(DocketMatcher.fold($0)) == nil }.prefix(3))
+        let topic = topics.prefix(2).joined(separator: " ")
+        guard let last = names.last else { return topic }
+        let parties = names.count > 1 ? names.dropLast().joined(separator: ", ") + " & " + last : last
+        return topic.isEmpty ? parties : parties + " " + topic
     }
 }
 
@@ -219,6 +244,7 @@ struct FileDraft: Identifiable, Sendable {
     /// empty so it follows the chosen names until you type your own.
     static func new(from story: Story?, editionDate: String?, seenThrough: String, today: String = EditionCalendar.iso(.now)) -> FileDraft {
         let names = story.map(DocketSuggestions.names(in:)) ?? []
+        let topics = story.map { TopicLexicon.concepts(in: $0.headline) } ?? []
         let file = TrackedFile(
             title: "",
             keywords: story.map { DocketSuggestions.chosen(from: names, headline: $0.headline) } ?? [],
@@ -226,7 +252,7 @@ struct FileDraft: Identifiable, Sendable {
             origin: story.flatMap { story in editionDate.map { TrackedFile.Origin(editionDate: $0, headline: story.headline) } },
             seenThrough: seenThrough
         )
-        return FileDraft(file: file, suggestions: names, isNew: true)
+        return FileDraft(file: file, suggestions: names + topics, isNew: true)
     }
 
     static func editing(_ file: TrackedFile) -> FileDraft {
@@ -254,6 +280,10 @@ final class DocketStore {
     }
 
     private var index: [IndexedStory] = []
+    /// Entry id → the story's folded text
+    private var texts: [String: String] = [:]
+    /// Names the editions' Who's who teach the matcher.
+    private(set) var vocabulary = TopicVocabulary()
     /// Entry id → the files whose record has it.
     private var followers: [String: [TrackedFile.ID]] = [:]
     private let url: URL?
@@ -341,15 +371,39 @@ final class DocketStore {
         }
     }
 
+    /// The file's words as the matcher reads them.
+    func queries(for file: TrackedFile) -> [TopicQuery] {
+        file.keywords
+            .filter { !$0.trimmingCharacters(in: .whitespaces).isEmpty }
+            .map { TopicQuery.read($0, vocabulary: vocabulary, exact: file.exactWords) }
+    }
+
+    /// A name for the file from its words as understood: "anthropic ipo" → "Anthropic IPO".
+    func suggestedTitle(for file: TrackedFile) -> String {
+        DocketSuggestions.title(for: queries(for: file).map(\.tidied))
+    }
+
     /// The stories a file with these words would have, for the editor's live count.
-    func preview(keywords: [String], match: TrackedFile.Match) -> [DocketEntry] {
-        index.filter { DocketMatcher.matches($0.text, keywords: keywords, match: match) }.map(\.entry)
+    func preview(for file: TrackedFile) -> [DocketEntry] {
+        let queries = queries(for: file)
+        return index.filter { DocketMatcher.matches($0.text, queries: queries, match: file.match) }.map(\.entry)
+    }
+
+    /// The other wordings an entry was found through, where it doesn't use the file's own.
+    func foundThrough(_ entry: DocketEntry, for file: TrackedFile) -> [String] {
+        guard let text = texts[entry.id] else { return [] }
+        var seen = Set<String>()
+        return queries(for: file)
+            .filter { $0.matches(text) }
+            .flatMap { $0.foundThrough(text) }
+            .filter { seen.insert(DocketMatcher.fold($0)).inserted }
     }
 
     // MARK: Changing
 
     func update(editions: [Edition]) {
         editionDates = editions.map(\.date)
+        vocabulary = TopicVocabulary(stories: editions.flatMap(\.stories))
         index = editions.flatMap { edition in
             edition.sections.flatMap { section in
                 section.stories.map { story in
@@ -360,6 +414,7 @@ final class DocketStore {
                 }
             }
         }
+        texts = Dictionary(index.map { ($0.entry.id, $0.text) }, uniquingKeysWith: { first, _ in first })
         rebuildRecords()
     }
 
@@ -414,7 +469,7 @@ final class DocketStore {
         var records: [TrackedFile.ID: [DocketEntry]] = [:]
         var followers: [String: [TrackedFile.ID]] = [:]
         for file in files {
-            let entries = preview(keywords: file.keywords, match: file.match)
+            let entries = preview(for: file)
             records[file.id] = entries
             for entry in entries {
                 followers[entry.id, default: []].append(file.id)

@@ -107,6 +107,7 @@ targets:
       - path: CourtCapital/Data/EditionStore.swift
       - path: CourtCapital/Data/EditionCache.swift
       - path: CourtCapital/Data/Docket.swift
+      - path: CourtCapital/Data/DocketTopics.swift
       - path: CourtCapital/Services/MorningNotification.swift
       - path: CourtCapital/App/Preferences.swift
     settings:

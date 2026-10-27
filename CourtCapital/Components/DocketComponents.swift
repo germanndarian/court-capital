@@ -187,6 +187,43 @@ struct FlowLayout: Layout {
     }
 }
 
+/// How the matcher reads a file's words, one line per word or phrase it widens:
+/// "Anthropic (or Claude) + IPO (or listing, S-1, roadshow…)".
+struct TopicReading: View {
+    let queries: [TopicQuery]
+
+    var body: some View {
+        VStack(alignment: .leading, spacing: 6) {
+            ForEach(queries.filter(\.isUnderstood), id: \.keyword) { query in
+                HStack(alignment: .firstTextBaseline, spacing: 8) {
+                    Lozenge(size: 4)
+                    line(query)
+                        .typeStyle(.text(13.5, italic: true, lineHeight: 1.4, relativeTo: .footnote))
+                        .multilineTextAlignment(.leading)
+                }
+            }
+        }
+        .accessibilityElement(children: .combine)
+    }
+
+    private func line(_ query: TopicQuery) -> Text {
+        query.parts.enumerated().reduce(Text(verbatim: "")) { text, item in
+            let (position, part) = item
+            var line = text
+            if position > 0 {
+                line = line + Text(verbatim: " + ").foregroundStyle(Theme.brassText)
+            }
+            line = line + Text(verbatim: part.label).foregroundStyle(Theme.ink)
+            if !part.alternatives.isEmpty {
+                let shown = part.alternatives.prefix(3).joined(separator: ", ")
+                let more = part.alternatives.count > 3 ? "…" : ""
+                line = line + Text(verbatim: " (or \(shown)\(more))").foregroundStyle(Theme.inkMuted)
+            }
+            return line
+        }
+    }
+}
+
 /// "New" in burgundy caps, with a count when there's more than one.
 struct NewTag: View {
     var count = 1

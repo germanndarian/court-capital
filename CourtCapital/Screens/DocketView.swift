@@ -133,7 +133,7 @@ struct DocketView: View {
 private struct DocketIntro: View {
     private let steps = [
         "Tap Follow this story at the end of any story, or long-press a headline in Today.",
-        "Choose the names to follow. Every edition that mentions them, earlier ones too, joins the file’s record.",
+        "Choose what to follow, like “SpaceX Tesla merger”. Every edition that covers it joins the file’s record, earlier ones too, even when a story puts it in other words.",
         "Add a date to watch, a hearing or a listing, and your own notes. New stories get a burgundy mark.",
     ]
 
@@ -285,7 +285,7 @@ struct DocketFileView: View {
                 )
                 .padding(.top, 20)
 
-                FollowingPanel(file: file)
+                FollowingPanel(file: file, queries: docket.queries(for: file))
                     .padding(.top, 26)
 
                 if let key = file.keyDate {
@@ -309,7 +309,8 @@ struct DocketFileView: View {
                     Timeline(
                         entries: record,
                         newIDs: newIDs,
-                        origin: file.origin
+                        origin: file.origin,
+                        foundThrough: { docket.foundThrough($0, for: file) }
                     ) { entry in
                         model.docketPath.append(.story(StoryRoute(editionDate: entry.editionDate, storyID: entry.story.id)))
                     }
@@ -446,9 +447,10 @@ private struct CoveragePanel: View {
     }
 }
 
-/// The names the file follows, and whether it needs all of them.
+/// The names the file follows, how they're read, and whether it needs all of them.
 private struct FollowingPanel: View {
     let file: TrackedFile
+    let queries: [TopicQuery]
 
     var body: some View {
         VStack(alignment: .leading, spacing: 0) {
@@ -462,14 +464,23 @@ private struct FollowingPanel: View {
                 }
             }
             .padding(.top, 12)
-            if file.keywords.count > 1 {
-                Text(file.match == .all ? "All of them, in the same story." : "Any one of them.")
+            if !file.exactWords, queries.contains(where: \.isUnderstood) {
+                TopicReading(queries: queries)
+                    .padding(.top, 12)
+            }
+            if file.keywords.count > 1 || file.exactWords {
+                Text(matchNote)
                     .typeStyle(.text(13, italic: true, relativeTo: .footnote))
                     .foregroundStyle(Theme.inkMuted)
                     .padding(.top, 10)
             }
         }
         .accessibilityElement(children: .combine)
+    }
+
+    private var matchNote: String {
+        let match = file.keywords.count > 1 ? (file.match == .all ? "All of them, in the same story." : "Any one of them.") : ""
+        return file.exactWords ? (match + " Exactly these words.").trimmingCharacters(in: .whitespaces) : match
     }
 }
 
@@ -568,6 +579,7 @@ private struct Timeline: View {
     let entries: [DocketEntry]
     let newIDs: Set<DocketEntry.ID>
     let origin: TrackedFile.Origin?
+    let foundThrough: (DocketEntry) -> [String]
     let open: (DocketEntry) -> Void
 
     var body: some View {
@@ -583,6 +595,7 @@ private struct Timeline: View {
                     entry: entry,
                     isNew: newIDs.contains(entry.id),
                     isOrigin: origin.map { $0.editionDate == entry.editionDate && $0.headline == entry.story.headline } ?? false,
+                    foundThrough: foundThrough(entry),
                     isFirst: index == 0,
                     isLast: index == entries.count - 1
                 ) {
@@ -597,6 +610,8 @@ private struct TimelineEntry: View {
     let entry: DocketEntry
     let isNew: Bool
     let isOrigin: Bool
+    /// Other wordings the story was found through: ["listing"]
+    let foundThrough: [String]
     let isFirst: Bool
     let isLast: Bool
     let open: () -> Void
@@ -643,6 +658,12 @@ private struct TimelineEntry: View {
                             .multilineTextAlignment(.leading)
                             .lineLimit(3)
                             .padding(.top, 6)
+                    }
+                    if !foundThrough.isEmpty {
+                        Text("Found through \(foundThrough.map { "“\($0)”" }.joined(separator: " and "))")
+                            .typeStyle(.text(12.5, italic: true, relativeTo: .caption))
+                            .foregroundStyle(Theme.brassText)
+                            .padding(.top, 8)
                     }
                     if isOrigin {
                         HStack(spacing: 6) {

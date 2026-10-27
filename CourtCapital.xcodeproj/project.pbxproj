@@ -94,6 +94,7 @@
 		CCB930893907C6833DFD6F56 /* PlayfairDisplay-Variable.ttf in Resources */ = {isa = PBXBuildFile; fileRef = 8C638DEF5DF7D8AE2AB66F3E /* PlayfairDisplay-Variable.ttf */; };
 		CD2B63F90C1EACE19DCE4E4E /* BodyText.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3C1D9F8B72823503811392DA /* BodyText.swift */; };
 		D624BC7F248843CB8D440034 /* Docket.swift in Sources */ = {isa = PBXBuildFile; fileRef = CA9A0BB151DFF95B88ADE199 /* Docket.swift */; };
+		DB53278E622D45C48DB0E470 /* DocketTopics.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5C66E234DF457F0659B5E10B /* DocketTopics.swift */; };
 		DB68CA3313E31049C354E892 /* edition-2026-10-08.json in Resources */ = {isa = PBXBuildFile; fileRef = 687FFC4B53EA343F1559240E /* edition-2026-10-08.json */; };
 		DDBF28107967421F998FD798 /* AppModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = EADD6EA14866C55902BB6F19 /* AppModel.swift */; };
 		E022A02FF74468CBF39998BB /* edition-2026-10-07.json in Resources */ = {isa = PBXBuildFile; fileRef = BD12EFAD593B6F4ACCD607E5 /* edition-2026-10-07.json */; };
@@ -104,6 +105,7 @@
 		F0F98DD14FB7F0CFCA8318EB /* NotionFeed.swift in Sources */ = {isa = PBXBuildFile; fileRef = A37F57F300A10EAEB463ADC9 /* NotionFeed.swift */; };
 		F7E4B251C4133B419FE1CE3D /* RootView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A377F08FE3F6FBC8E8309D80 /* RootView.swift */; };
 		F8E346FAAF93092100244D88 /* Edition.swift in Sources */ = {isa = PBXBuildFile; fileRef = 01D93C1CAFCB628E9FBA12F4 /* Edition.swift */; };
+		F9EB08207FC8EAF84A49BFAB /* DocketTopics.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5C66E234DF457F0659B5E10B /* DocketTopics.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -148,6 +150,7 @@
 		57A3B34225788136395706CD /* NotionClientTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NotionClientTests.swift; sourceTree = "<group>"; };
 		5908D216A65A0CDD6E945E06 /* Preferences.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Preferences.swift; sourceTree = "<group>"; };
 		5BB079F5AF20D48B0FE106A6 /* NotionFeedTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NotionFeedTests.swift; sourceTree = "<group>"; };
+		5C66E234DF457F0659B5E10B /* DocketTopics.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DocketTopics.swift; sourceTree = "<group>"; };
 		687FFC4B53EA343F1559240E /* edition-2026-10-08.json */ = {isa = PBXFileReference; lastKnownFileType = text.json; path = "edition-2026-10-08.json"; sourceTree = "<group>"; };
 		6CC3B9F5FCBABEF94AC98B2B /* PlayfairDisplay-Italic-Variable.ttf */ = {isa = PBXFileReference; lastKnownFileType = file; path = "PlayfairDisplay-Italic-Variable.ttf"; sourceTree = "<group>"; };
 		6D949B97D1C03D2D1899D305 /* CourtCapitalTests.xctest */ = {isa = PBXFileReference; includeInIndex = 0; lastKnownFileType = wrapper.cfbundle; path = CourtCapitalTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
@@ -231,6 +234,7 @@
 			children = (
 				3E385D276155C45DF774408F /* BackgroundRefresh.swift */,
 				CA9A0BB151DFF95B88ADE199 /* Docket.swift */,
+				5C66E234DF457F0659B5E10B /* DocketTopics.swift */,
 				132571C1920EF99E279FEBFC /* EditionCache.swift */,
 				F00D7B3DF4E5E028A54E6D86 /* EditionStore.swift */,
 			);
@@ -607,6 +611,7 @@
 				4811A01F05BC3F4768EE8CA0 /* Docket.swift in Sources */,
 				B25DD1208044C46891E332C0 /* DocketComponents.swift in Sources */,
 				C989F6570CF49D15123F3A21 /* DocketReminders.swift in Sources */,
+				DB53278E622D45C48DB0E470 /* DocketTopics.swift in Sources */,
 				C2A84F089B06A3C886CE6DA5 /* DocketView.swift in Sources */,
 				2FC1C5DC8B980FFB69248222 /* DropCapParagraph.swift in Sources */,
 				350D78923DC8943C4F6B2011 /* Edition.swift in Sources */,
@@ -646,6 +651,7 @@
 				6BD6B5072EEDE4A63384DC1E /* BodyText.swift in Sources */,
 				D624BC7F248843CB8D440034 /* Docket.swift in Sources */,
 				3066AFF3AE4A4BADFA895B4E /* DocketTests.swift in Sources */,
+				F9EB08207FC8EAF84A49BFAB /* DocketTopics.swift in Sources */,
 				F8E346FAAF93092100244D88 /* Edition.swift in Sources */,
 				B06C5AD9478EC9C541BBD37A /* EditionCache.swift in Sources */,
 				471F17B1066D4F156546D895 /* EditionCalendar.swift in Sources */,
