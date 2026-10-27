@@ -10,13 +10,13 @@
   <img alt="Fonts: SIL OFL" src="https://img.shields.io/badge/fonts-SIL%20OFL-6F1F2C?style=flat-square&labelColor=F4EEE1">
 </p>
 
-<p align="center"><i>Ten stories. Eleven minutes. Every weekday by 5:30 a.m.</i></p>
+<p align="center"><i>Ten stories. Eleven minutes. Every weekday by 4:30 a.m.</i></p>
 
 ---
 
 Court & Capital is a morning briefing on law, finance and AI that reads like a newspaper. There's one Big Story, the overnight markets, and a short edition in numbered sections. Every story says who's who, why it matters, and what it means in plain words.
 
-Every weekday around 05:00 Zürich time, a Claude scheduled task researches the news and writes the edition into Notion. The iPhone app reads it from there, keeps the editions for offline reading, and lays them out like a front page. There's no server and no API bill: the task runs on a Claude plan, and the app only ever reads.
+Every weekday at about 03:52 Zürich time, a Claude scheduled task researches the news and writes the edition into Notion. The iPhone app reads it from there, keeps the editions for offline reading, and lays them out like a front page. There's no server and no API bill: the task runs on a Claude plan, and the app only ever reads.
 
 <picture>
   <source media="(prefers-color-scheme: dark)" srcset="docs/readme/showcase-night.jpg">
@@ -52,7 +52,7 @@ Day is the morning paper. Night is the library: racing-green leather, cream type
   <img alt="The medium and small widgets" src="docs/readme/widgets-day.jpg">
 </picture>
 
-The widgets fetch the new edition shortly after 05:30. The medium widget shows the Big Story, three markets and your ETF; on the Lock Screen you get the date and the Big Story headline. Tapping a widget opens Today, and the medium widget's market column jumps straight to the markets.
+The widgets fetch the new edition shortly after 04:30. The medium widget shows the Big Story, three markets and your ETF; on the Lock Screen you get the date and the Big Story headline. Tapping a widget opens Today, and the medium widget's market column jumps straight to the markets.
 
 ## ◆ Type
 
@@ -74,7 +74,7 @@ Every token resolves per appearance and lives in [`Shared/Theme/Theme.swift`](Sh
 ## How it works
 
 ```
-Claude scheduled task, Mon–Fri around 05:00 Zürich time
+Claude scheduled task, Mon–Fri at about 03:52 Zürich time, ready by 04:30
   └─ writes "Edition — Wednesday, 21 October 2026" as a child page of Court & Capital in Notion,
      ending with a "Data" heading and one JSON code block holding the whole edition
                                    │
@@ -149,7 +149,7 @@ After the edition, add a heading "Data" and below it exactly one code block with
 }
 ```
 
-The app works out reading time, story counts, edition numbers and story ids itself. In `body`, an explanation in italic parentheses like `*(stepped aside from the case)*` is shown in muted italics. The two files in [`Shared/Fixtures`](Shared/Fixtures) are complete examples.
+The app works out reading time, story counts, edition numbers and story ids itself. It prints its own footer, so `footer` never shows in the app. In `body`, an explanation in italic parentheses like `*(stepped aside from the case)*` is shown in muted italics. The two files in [`Shared/Fixtures`](Shared/Fixtures) are complete examples.
 
 </details>
 
@@ -205,7 +205,7 @@ A file follows a few names or words, such as *Anthropic* and *IPO*. A story belo
 | Feature | Free account | Paid account |
 | --- | --- | --- |
 | App, widgets, offline cache, background refresh | ✓ | ✓ |
-| Morning notification | Local, at a set time (05:30) | A push the moment the edition lands, though that would also need a small server watching Notion |
+| Morning notification | Local, at a set time (04:30) | A push the moment the edition lands, though that would also need a small server watching Notion |
 | Widgets | Fetch from Notion themselves | Could share the app's cache through an App Group: instant and offline |
 | Sync across devices (iCloud) | — | Possible |
 | Signing | Expires after 7 days | Lasts a year; TestFlight available |

@@ -57,7 +57,7 @@ private struct UncheckedBox<Value>: @unchecked Sendable {
 }
 
 /// One entry per edition. After a successful fetch the next one is requested shortly after
-/// the next 05:30 edition; after a failed one, in half an hour.
+/// the next 04:30 edition; after a failed one, in half an hour.
 struct EditionProvider: TimelineProvider {
     func placeholder(in context: Context) -> EditionEntry {
         EditionEntry(date: .now, edition: SampleEdition.edition)
@@ -167,21 +167,21 @@ struct NoEditionView: View {
     var body: some View {
         switch family {
         case .accessoryInline:
-            Text("Court & Capital · 5:30 a.m.")
+            Text("Court & Capital · \(EditionFormat.readyTime)")
         case .accessoryCircular:
             CircularFigure(big: "–", small: "C&C")
         case .accessoryRectangular:
             VStack(alignment: .leading, spacing: 2) {
                 Text("Court & Capital")
                     .typeStyle(.label(8, tracking: 0.2, weight: 700).fixed)
-                Text("The next edition arrives at 5:30 a.m.")
+                Text("The next edition arrives at \(EditionFormat.readyTime)")
                     .typeStyle(.display(13.5, lineHeight: 1.2, relativeTo: nil))
             }
             .frame(maxWidth: .infinity, alignment: .leading)
         default:
             VStack(spacing: 8) {
                 Crest(diameter: 30, ring: 2, monogram: 9)
-                Text("The next edition arrives at 5:30 a.m.")
+                Text("The next edition arrives at \(EditionFormat.readyTime)")
                     .typeStyle(.display(13, italic: true, relativeTo: nil))
                     .foregroundStyle(Theme.ink)
                     .multilineTextAlignment(.center)

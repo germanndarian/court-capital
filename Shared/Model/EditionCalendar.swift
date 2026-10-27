@@ -1,10 +1,10 @@
 import Foundation
 
 /// Editions are dated in Zürich time, every weekday. The scheduled task writes them to
-/// Notion around 05:00; the app expects today's edition from 05:30.
+/// Notion from about 03:52; the app expects today's edition from 04:30.
 enum EditionCalendar {
     static let timeZone = TimeZone(identifier: "Europe/Zurich")!
-    static let readyHour = 5
+    static let readyHour = 4
     static let readyMinute = 30
     static let firstVolumeYear = 2026
 
@@ -74,7 +74,7 @@ enum EditionCalendar {
         }
     }
 
-    /// The edition the reader should have by now: today's after 05:30 on a weekday,
+    /// The edition the reader should have by now: today's after 04:30 on a weekday,
     /// otherwise the most recent weekday's.
     static func expectedEditionDate(at now: Date = .now) -> String {
         let calendar = calendar
@@ -143,6 +143,11 @@ enum EditionFormat {
         let minute = minutes % 60
         let twelveHour = hour % 12 == 0 ? 12 : hour % 12
         return String(format: "%d:%02d %@", twelveHour, minute, hour < 12 ? "a.m." : "p.m.")
+    }
+
+    /// 4:30 a.m., when the edition is ready
+    static var readyTime: String {
+        time(minutesAfterMidnight: EditionCalendar.readyHour * 60 + EditionCalendar.readyMinute)
     }
 
     /// "ten", "two hundred"

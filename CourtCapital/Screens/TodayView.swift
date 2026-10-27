@@ -31,7 +31,7 @@ struct TodayView: View {
                 ScrollView {
                     NoticeView(
                         title: "No edition yet",
-                        message: store.refreshProblem ?? "The first edition arrives on the next weekday at 5:30 a.m."
+                        message: store.refreshProblem ?? "The first edition arrives on the next weekday at \(EditionFormat.readyTime)"
                     )
                     .containerRelativeFrame(.vertical)
                 }
@@ -183,11 +183,11 @@ private struct EditionFooter: View {
                 .foregroundStyle(Theme.ink)
             if isToday {
                 let next = EditionCalendar.nextReady(after: edition.day.addingTimeInterval(12 * 3600))
-                Text("Next: \(EditionFormat.weekday(next)) at \(EditionFormat.time(minutesAfterMidnight: EditionCalendar.readyHour * 60 + EditionCalendar.readyMinute))")
+                Text("Next: \(EditionFormat.weekday(next)) at \(EditionFormat.readyTime)")
                     .typeStyle(.label(9.5, tracking: 0.2))
                     .foregroundStyle(Theme.inkMuted)
             }
-            Text("Court & Capital · \(edition.footer)")
+            Text("Court & Capital · from public reporting · not financial or legal advice")
                 .typeStyle(.text(12, italic: true, lineHeight: 1.4, relativeTo: .caption))
                 .foregroundStyle(Theme.inkMuted)
                 .padding(.top, 6)
