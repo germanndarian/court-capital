@@ -8,7 +8,7 @@ on:
     types: [opened, synchronize, reopened, ready_for_review]
 jobs:
   agents:
-    uses: germanndarian/agents-ci/.github/workflows/agents.yml@main
+    uses: germanndarian/agents-ci/.github/workflows/agents.yml@v1
     permissions:
       contents: read
       pull-requests: write
