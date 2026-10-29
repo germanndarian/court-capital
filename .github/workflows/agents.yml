@@ -1,6 +1,6 @@
 # The agents review every pull request into main: the reviewer, tester, critic and business
-# analyst, as one comment on the PR that later pushes update. The workflow itself lives in
-# germanndarian/dashboard; this repo only needs the CLAUDE_CODE_OAUTH_TOKEN secret.
+# analyst, as one comment on the PR that later pushes update. The workflow lives in the public
+# germanndarian/agents-ci; this repo only needs the CLAUDE_CODE_OAUTH_TOKEN secret.
 name: Agents
 on:
   pull_request:
@@ -8,7 +8,7 @@ on:
     types: [opened, synchronize, reopened, ready_for_review]
 jobs:
   agents:
-    uses: germanndarian/dashboard/.github/workflows/agents.yml@main
+    uses: germanndarian/agents-ci/.github/workflows/agents.yml@main
     permissions:
       contents: read
       pull-requests: write
