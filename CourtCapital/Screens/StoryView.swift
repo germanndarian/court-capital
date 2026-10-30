@@ -1,19 +1,27 @@
 import SwiftUI
 
+/// A story from an edition on the iPhone, or the stored copy of a saved one.
 struct StoryView: View {
-    let edition: Edition
-    let story: Story
+    let placed: PlacedStory
     let backTitle: String
     let back: () -> Void
     @State private var openSource: IdentifiableURL?
+    @Environment(AppModel.self) private var model
+    @Environment(SavedStore.self) private var saved
 
     var body: some View {
+        let story = placed.story
         ScrollView {
             VStack(alignment: .leading, spacing: 0) {
-                StoryTopBar(backTitle: backTitle, editionNumber: edition.number, back: back)
+                StoryTopBar(
+                    backTitle: backTitle,
+                    editionNumber: placed.number,
+                    bookmark: StoryBookmark(isSaved: saved.isSaved(story, on: placed.editionDate)) { model.toggleSaved(placed.saved()) },
+                    back: back
+                )
 
                 HStack(spacing: 10) {
-                    Text(edition.section(containing: story.id)?.kicker ?? "")
+                    Text(placed.sectionKicker)
                         .typeStyle(.label(10))
                         .foregroundStyle(Theme.brassText)
                     RegionTag(region: story.region)
@@ -27,7 +35,7 @@ struct StoryView: View {
                     .accessibilityAddTraits(.isHeader)
 
                 HStack(alignment: .firstTextBaseline) {
-                    Text(EditionFormat.storyDate(edition.day))
+                    Text(EditionFormat.storyDate(placed.day))
                         .typeStyle(.text(13, italic: true, relativeTo: .footnote))
                         .foregroundStyle(Theme.inkMuted)
                     Spacer(minLength: 8)
@@ -52,9 +60,9 @@ struct StoryView: View {
                     .padding(.top, 26)
                 SourceList(sources: story.sources) { openSource = IdentifiableURL(url: $0) }
                     .padding(.top, 32)
-                FollowStoryButton(story: story, edition: edition)
+                FollowStoryButton(story: story, editionDate: placed.editionDate, hasEditionID: placed.isLive)
                     .padding(.top, 32)
-                ShareStoryButton(text: StoryShare.text(story, in: edition))
+                ShareStoryButton(text: StoryShare.text(story, on: placed.day))
                     .padding(.top, 14)
 
                 Crest(diameter: 28, monogram: 9)

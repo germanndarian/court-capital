@@ -3,6 +3,7 @@ import SwiftUI
 struct ArchiveView: View {
     @Environment(AppModel.self) private var model
     @Environment(EditionStore.self) private var store
+    @Environment(SavedStore.self) private var saved
     @State private var selectedMonth: String?
 
     var body: some View {
@@ -17,6 +18,9 @@ struct ArchiveView: View {
                             .typeStyle(.text(14, italic: true, relativeTo: .subheadline))
                             .foregroundStyle(Theme.inkMuted)
                             .padding(.top, 6)
+
+                        SavedShelfEntry(count: saved.count, open: openSaved)
+                            .padding(.top, 20)
 
                         Bookshelf(months: archive.shelf, selected: month.id) { picked in
                             withAnimation(.easeOut(duration: 0.25)) { selectedMonth = picked }
@@ -51,10 +55,20 @@ struct ArchiveView: View {
                 }
                 .scrollIndicators(.hidden)
             } else {
+                // The edition cache can be empty (rebuilt, offline) while the saved stories are
+                // still on the iPhone, so the way to them stays.
                 ScrollView {
-                    NoticeView(title: "The shelf is empty", message: store.refreshProblem ?? "Past editions appear here once they’re published.")
-                        .containerRelativeFrame(.vertical)
+                    VStack(alignment: .leading, spacing: 0) {
+                        ScreenHeading(kicker: "Bound volumes", title: "The Archive")
+                        SavedShelfEntry(count: saved.count, open: openSaved)
+                            .padding(.top, 20)
+                        NoticeView(title: "The shelf is empty", message: store.refreshProblem ?? "Past editions appear here once they’re published.")
+                            .containerRelativeFrame(.vertical) { height, _ in height * 0.6 }
+                    }
+                    .padding(.horizontal, 24)
+                    .padding(.top, 14)
                 }
+                .scrollIndicators(.hidden)
             }
         }
         .refreshable { await store.refresh() }
@@ -62,11 +76,53 @@ struct ArchiveView: View {
         .sensoryFeedback(.selection, trigger: selectedMonth)
     }
 
+    private func openSaved() {
+        model.archivePath.append(.saved)
+    }
+
     /// "Volume I, MMXXVI · two hundred editions"
     private func summary(_ archive: Archive, month: ArchiveMonth) -> String {
         let volume = max(month.year - 2025, 1)
         let count = archive.editionCount
         return "Volume \(Roman.numeral(volume)), \(Roman.numeral(month.year)) · \(EditionFormat.spelled(count)) \(count == 1 ? "edition" : "editions")"
+    }
+}
+
+/// The way to the Saved shelf, between double rules: "Saved stories · Three stories saved".
+private struct SavedShelfEntry: View {
+    let count: Int
+    let open: () -> Void
+
+    var body: some View {
+        Button(action: open) {
+            VStack(spacing: 0) {
+                DoubleRule(color: Theme.brass)
+                HStack(spacing: 14) {
+                    Image(systemName: count == 0 ? "bookmark" : "bookmark.fill")
+                        .font(.system(size: 17))
+                        .foregroundStyle(count == 0 ? Theme.brassText : Theme.burgundy)
+                        .frame(width: 20)
+                        .accessibilityHidden(true)
+                    VStack(alignment: .leading, spacing: 3) {
+                        Text("Saved stories")
+                            .typeStyle(.display(20, italic: true, relativeTo: .title3))
+                            .foregroundStyle(Theme.ink)
+                        Text(count == 0 ? "Nothing saved yet" : "\(EditionFormat.storyCount(count)) saved")
+                            .typeStyle(.text(12.5, italic: true, relativeTo: .caption))
+                            .foregroundStyle(Theme.inkMuted)
+                    }
+                    .frame(maxWidth: .infinity, alignment: .leading)
+                    Chevron()
+                }
+                .padding(EdgeInsets(top: 12, leading: 4, bottom: 12, trailing: 6))
+                .frame(minHeight: 44)
+                DoubleRule(color: Theme.brass, mirrored: true)
+            }
+            .contentShape(Rectangle())
+        }
+        .buttonStyle(PressedRowStyle())
+        .accessibilityElement(children: .combine)
+        .accessibilityHint("Opens your saved stories")
     }
 }
 

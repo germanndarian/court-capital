@@ -11,7 +11,7 @@ struct CourtCapitalApp: App {
     init() {
         let container = EditionCache.makeContainer()
         self.container = container
-        _model = State(initialValue: AppModel(store: EditionStore(context: container.mainContext), docket: DocketStore()))
+        _model = State(initialValue: AppModel(store: EditionStore(context: container.mainContext), docket: DocketStore(), saved: SavedStore()))
     }
 
     var body: some Scene {
@@ -20,6 +20,7 @@ struct CourtCapitalApp: App {
                 .environment(model)
                 .environment(model.store)
                 .environment(model.docket)
+                .environment(model.saved)
                 .onOpenURL { model.handle($0) }
                 .onAppear { appearance.apply(animated: false) }
                 .onChange(of: appearance) { _, newValue in newValue.apply(animated: true) }

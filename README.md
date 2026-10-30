@@ -30,6 +30,7 @@ Every weekday at about 03:52 Zürich time, a Claude scheduled task researches th
 | **Today** | The masthead with Volume and edition number in Roman numerals, The Big Story, the markets at the previous close with your iShares MSCI ACWI ETF underneath, and the day's stories by section, each tagged by region. Pull down to refresh. |
 | **The story** | Who's who, the facts with a brass drop cap, *Why it matters*, *In plain words*, sources that open in Safari, and a share button. |
 | **The Docket** | The stories you follow over weeks, like a merger in talks or an IPO. Tap *Follow this story* at the end of a story, or long-press a headline, and choose the names to follow. Each file, bound in navy, green or burgundy leather, keeps the record of every edition that mentions them, earlier ones included. It shows four weeks of coverage, a countdown to a date you're watching and your notes, and marks new stories in burgundy. |
+| **Saved stories** | Tap the bookmark at the top of a story, or long-press a headline and choose *Save Story*. The Archive opens them on a *Saved stories* shelf, newest saved first, and each stays on the iPhone even after its edition is replaced. |
 | **The Archive** | Every published edition, bound by month as leather volumes on a shelf. Pull a volume to read its ledger; tap a row to open that edition. |
 | **Settings** | The weekday morning notification and its delivery time, a break of any number of days, plus Day, Night or Automatic. |
 | **Widgets** | Small and medium on the Home Screen; rectangular, circular and inline on the Lock Screen. |
@@ -209,6 +210,14 @@ Turn Similar wording off in a file to match its words exactly as typed.
 - **Closing a case** keeps the file and its record but takes it off Today; **removing** it deletes the file. The stories stay in the archive either way.
 - **Where it's kept:** `docket.json` in the app's Application Support folder, on the iPhone only. Like everything else, nothing is written to Notion. If the file ever can't be read, it's set aside as `docket-unreadable-….json` instead of being overwritten.
 
+### Saved stories
+
+Tap the bookmark at the top of a story, or long-press a headline in Today or in an earlier edition and choose *Save Story*. The *Saved stories* entry at the top of the Archive opens the shelf, newest saved first. Take a story off it with the bookmark, with *Remove from Saved* in the long-press menu, or by pressing and holding it on the shelf.
+
+- **Its own copy:** a story's id ("2-1") is only its position in the edition, so it shifts when the Notion page is edited, and the edition itself can be replaced or dropped from the cache. A saved story keeps a copy of everything the story page shows, and is matched by the edition's date and its headline, never by the id.
+- **Opening one:** if the edition on the iPhone still has a story with that headline, you read that story, with its current text. Otherwise you read the saved copy. A copy can still open a new Docket file, but it never shows another story's file as the one it follows.
+- **Where it's kept:** `saved.json` in the app's Application Support folder, apart from the edition cache, on the iPhone only. Like everything else, nothing is written to Notion. If the file ever can't be read, it's set aside as `saved-unreadable-….json` instead of being overwritten.
+
 ### What a paid developer account ($99/year) would add
 
 | Feature | Free account | Paid account |
@@ -224,8 +233,8 @@ Turn Similar wording off in a file to match its words exactly as typed.
 ```
 CourtCapital/            the app
   App/                   entry point, navigation, appearance, deep links
-  Data/                  SwiftData cache, edition store, the Docket, background refresh
-  Screens/               Today, Story, Docket, Archive, Settings
+  Data/                  SwiftData cache, edition store, the Docket, saved stories, background refresh
+  Screens/               Today, Story, Docket, Archive, Saved, Settings
   Components/            masthead, markets strip, story rows, drop cap, tab bar
   Services/              morning notification, Docket reminders
 CourtCapitalWidgets/     Home Screen and Lock Screen widgets
@@ -235,7 +244,7 @@ Shared/                  compiled into both targets
   Model/                 edition, edition calendar, archive
   Theme/                 colour tokens, type scale, paper grain, rules, ornaments
   Fonts/                 Playfair Display and Newsreader (SIL OFL)
-Tests/                   Notion client, feed, cache and Docket tests, against a fake Notion
+Tests/                   Notion client, feed, cache, Docket and saved-stories tests, against a fake Notion
 Config/                  build settings; your token goes in Secrets.xcconfig
 Tools/                   app icon and README artwork renderers
 ```
