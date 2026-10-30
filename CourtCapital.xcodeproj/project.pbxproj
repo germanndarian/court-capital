@@ -18,6 +18,7 @@
 		1E5D7B041DB6174D651C78BA /* EditionPause.swift in Sources */ = {isa = PBXBuildFile; fileRef = CF7768B2803AF0F811D73158 /* EditionPause.swift */; };
 		22512BC105C3BC6135BC9A4F /* EditionStore.swift in Sources */ = {isa = PBXBuildFile; fileRef = F00D7B3DF4E5E028A54E6D86 /* EditionStore.swift */; };
 		2448CED682469EACA8DC81E2 /* Paper.swift in Sources */ = {isa = PBXBuildFile; fileRef = 50985640D836864D87278D28 /* Paper.swift */; };
+		26010EB4B1140A34155EE69A /* SavedStories.swift in Sources */ = {isa = PBXBuildFile; fileRef = E9274A37521182F4FAB4C5FF /* SavedStories.swift */; };
 		26CDBE5393603F890FA217F9 /* EditionTabBar.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1A04976B734840B691406E63 /* EditionTabBar.swift */; };
 		27B74E81A5DF6F23849846C0 /* NotionFeed.swift in Sources */ = {isa = PBXBuildFile; fileRef = A37F57F300A10EAEB463ADC9 /* NotionFeed.swift */; };
 		29EB0782FB6D736B35853334 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 82C5ECA861609F68B0FFAA3F /* Assets.xcassets */; };
@@ -678,6 +679,7 @@
 				38B49FE4CEA1EE8E4402C389 /* PauseAndMarketTests.swift in Sources */,
 				8DC9F2165623421E9B6F7E83 /* Preferences.swift in Sources */,
 				69CDDF4F98B1DAE87D0E93BD /* SampleEdition.swift in Sources */,
+				26010EB4B1140A34155EE69A /* SavedStories.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
