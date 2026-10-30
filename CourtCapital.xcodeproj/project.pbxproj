@@ -44,6 +44,7 @@
 		582AFA2570A668FB8DAF653E /* Theme.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8B55994C7D3865C06BBD85AF /* Theme.swift */; };
 		5975C7F4D5B821C4323C6F33 /* BodyText.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3C1D9F8B72823503811392DA /* BodyText.swift */; };
 		598FE2A31B5227ED4F5C819B /* PlayfairDisplay-Variable.ttf in Resources */ = {isa = PBXBuildFile; fileRef = 8C638DEF5DF7D8AE2AB66F3E /* PlayfairDisplay-Variable.ttf */; };
+		5A0781D58388778DBF5D0BDE /* SavedStoriesTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = B2C2DCE4FCA8CDFEA310EB87 /* SavedStoriesTests.swift */; };
 		5AC21BC8071F0C2F154DCA11 /* edition-2026-10-08.json in Resources */ = {isa = PBXBuildFile; fileRef = 687FFC4B53EA343F1559240E /* edition-2026-10-08.json */; };
 		5AD40735184280B97D1E9CB0 /* EditionStoreTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = B9E279074E1068C60E1593E2 /* EditionStoreTests.swift */; };
 		5B74680B662D63BC826DD5C6 /* SettingsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A1A5621546483520DD9ACFE4 /* SettingsView.swift */; };
@@ -178,6 +179,7 @@
 		A90801FCC4562AF9ED372CA4 /* PauseAndMarketTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PauseAndMarketTests.swift; sourceTree = "<group>"; };
 		ABD5A89B5A65D737C0642133 /* DropCapParagraph.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DropCapParagraph.swift; sourceTree = "<group>"; };
 		AF240252E23174241E46266C /* Typography.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Typography.swift; sourceTree = "<group>"; };
+		B2C2DCE4FCA8CDFEA310EB87 /* SavedStoriesTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SavedStoriesTests.swift; sourceTree = "<group>"; };
 		B8CCDE0CC281B41AD981C3DC /* SampleEdition.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SampleEdition.swift; sourceTree = "<group>"; };
 		B9E279074E1068C60E1593E2 /* EditionStoreTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = EditionStoreTests.swift; sourceTree = "<group>"; };
 		BBC4032DB113556D0D3B307D /* DocketView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DocketView.swift; sourceTree = "<group>"; };
@@ -396,6 +398,7 @@
 				5BB079F5AF20D48B0FE106A6 /* NotionFeedTests.swift */,
 				A41CD114FDAA373DAC941CD3 /* NotionStub.swift */,
 				A90801FCC4562AF9ED372CA4 /* PauseAndMarketTests.swift */,
+				B2C2DCE4FCA8CDFEA310EB87 /* SavedStoriesTests.swift */,
 			);
 			path = Tests;
 			sourceTree = "<group>";
@@ -680,6 +683,7 @@
 				8DC9F2165623421E9B6F7E83 /* Preferences.swift in Sources */,
 				69CDDF4F98B1DAE87D0E93BD /* SampleEdition.swift in Sources */,
 				26010EB4B1140A34155EE69A /* SavedStories.swift in Sources */,
+				5A0781D58388778DBF5D0BDE /* SavedStoriesTests.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
