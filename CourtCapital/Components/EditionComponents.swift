@@ -180,9 +180,11 @@ struct StoryRow: View {
     let action: () -> Void
     @Environment(AppModel.self) private var model
     @Environment(DocketStore.self) private var docket
+    @Environment(SavedStore.self) private var saved
 
     var body: some View {
         let files = docket.files(following: story, on: edition.date)
+        let isSaved = saved.isSaved(story, on: edition.date)
         Button(action: action) {
             HStack(alignment: .top, spacing: 14) {
                 VStack(alignment: .leading, spacing: 7) {
@@ -221,6 +223,11 @@ struct StoryRow: View {
                     Label("Open “\(file.title)”", systemImage: "folder")
                 }
             }
+            Button {
+                model.toggleSaved(SavedStory(story, editionDate: edition.date, sectionKicker: edition.section(containing: story.id)?.kicker ?? ""))
+            } label: {
+                Label(isSaved ? "Remove from Saved" : "Save Story", systemImage: isSaved ? "bookmark.slash" : "bookmark")
+            }
             ShareLink(item: StoryShare.text(story, in: edition)) {
                 Label("Share Story", systemImage: "square.and.arrow.up")
             }
@@ -235,11 +242,15 @@ struct StoryRow: View {
 /// What a shared story looks like in Messages or Mail.
 enum StoryShare {
     static func text(_ story: Story, in edition: Edition) -> String {
+        text(story, on: edition.day)
+    }
+
+    static func text(_ story: Story, on day: Date) -> String {
         var lines = [story.headline, "", story.plainWordsText]
         if let source = story.sources.first {
             lines += ["", "\(source.outlet): \(source.url)"]
         }
-        lines += ["", "Court & Capital · \(EditionFormat.dateline(edition.day))"]
+        lines += ["", "Court & Capital · \(EditionFormat.dateline(day))"]
         return lines.joined(separator: "\n")
     }
 }

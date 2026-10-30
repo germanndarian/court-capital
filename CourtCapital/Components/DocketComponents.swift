@@ -350,12 +350,17 @@ struct DocketMarker: View {
 /// At the end of a story: follow it on the Docket, or, once it's there, go to its file.
 struct FollowStoryButton: View {
     let story: Story
-    let edition: Edition
+    let editionDate: String
+    /// False for the stored copy of a saved story that isn't in its edition any more. Its id is
+    /// only where the story stood when it was saved, and the Docket follows stories by edition
+    /// date and id, so asking would show another story's file. Such a story reads as not
+    /// followed, and can still open a new file from its own text.
+    var hasEditionID = true
     @Environment(AppModel.self) private var model
     @Environment(DocketStore.self) private var docket
 
     var body: some View {
-        if let file = docket.files(following: story, on: edition.date).first {
+        if hasEditionID, let file = docket.files(following: story, on: editionDate).first {
             Button {
                 model.openFile(file.id)
             } label: {
@@ -387,7 +392,7 @@ struct FollowStoryButton: View {
             .accessibilityHint("Opens the file on the Docket")
         } else {
             Button {
-                model.follow(story, in: edition)
+                model.follow(story, editionDate: editionDate)
             } label: {
                 VStack(spacing: 0) {
                     DoubleRule(color: Theme.brass)

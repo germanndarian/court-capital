@@ -78,6 +78,10 @@ struct ArchiveTab: View {
                         ArchivedEditionView(date: date)
                     case .story(let story):
                         StoryDestination(route: story, backTitle: "Edition") { model.archivePath.removeLast() }
+                    case .saved:
+                        SavedView()
+                    case .savedStory(let saved):
+                        SavedStoryDestination(saved: saved, backTitle: "Saved") { model.archivePath.removeLast() }
                     }
                 }
         }
@@ -113,12 +117,26 @@ struct StoryDestination: View {
 
     var body: some View {
         if let edition = store.cachedEdition(on: route.editionDate), let story = edition.story(id: route.storyID) {
-            StoryView(edition: edition, story: story, backTitle: backTitle, back: back)
+            StoryView(placed: PlacedStory(story, in: edition), backTitle: backTitle, back: back)
                 .toolbar(.hidden, for: .navigationBar)
         } else {
             NoticeView(title: "Story unavailable", message: "This story isn’t saved on your iPhone yet.")
                 .paperScreen()
         }
+    }
+}
+
+/// Opens a story from the Saved shelf: the live story when its edition still has one with the
+/// same headline, otherwise the copy kept with the bookmark.
+struct SavedStoryDestination: View {
+    let saved: SavedStory
+    let backTitle: String
+    let back: () -> Void
+    @Environment(EditionStore.self) private var store
+
+    var body: some View {
+        StoryView(placed: saved.resolve(in: store.cachedEdition(on: saved.editionDate)), backTitle: backTitle, back: back)
+            .toolbar(.hidden, for: .navigationBar)
     }
 }
 

@@ -2,20 +2,27 @@ import SafariServices
 import SwiftUI
 
 /// "‹ Today · C&C · No. CC" over a hairline. A file shows "Day XII" on the right instead.
+/// The story page adds a bookmark beside the edition number.
 struct StoryTopBar: View {
     var backTitle = "Today"
     let trailing: String
+    var bookmark: StoryBookmark?
     let back: () -> Void
 
-    init(backTitle: String = "Today", editionNumber: Int, back: @escaping () -> Void) {
-        self.init(backTitle: backTitle, trailing: "No. \(Roman.numeral(editionNumber))", back: back)
+    init(backTitle: String = "Today", editionNumber: Int, bookmark: StoryBookmark? = nil, back: @escaping () -> Void) {
+        self.init(backTitle: backTitle, trailing: "No. \(Roman.numeral(editionNumber))", bookmark: bookmark, back: back)
     }
 
-    init(backTitle: String = "Today", trailing: String, back: @escaping () -> Void) {
+    init(backTitle: String = "Today", trailing: String, bookmark: StoryBookmark? = nil, back: @escaping () -> Void) {
         self.backTitle = backTitle
         self.trailing = trailing
+        self.bookmark = bookmark
         self.back = back
     }
+
+    /// Both sides are as wide, so the monogram stays in the middle. The bookmark makes the
+    /// right side wider.
+    private var sideWidth: CGFloat { bookmark == nil ? 80 : 124 }
 
     var body: some View {
         HStack {
@@ -30,7 +37,7 @@ struct StoryTopBar: View {
                 }
                 .foregroundStyle(Theme.brassText)
                 .padding(.vertical, 12)
-                .frame(minWidth: 80, minHeight: 44, alignment: .leading)
+                .frame(minWidth: sideWidth, minHeight: 44, alignment: .leading)
                 .contentShape(Rectangle())
             }
             .buttonStyle(.plain)
@@ -43,13 +50,46 @@ struct StoryTopBar: View {
                 .accessibilityHidden(true)
             Spacer(minLength: 0)
 
-            Text(trailing)
-                .typeStyle(.label(9.5, tracking: 0.2))
-                .foregroundStyle(Theme.inkMuted)
-                .frame(minWidth: 80, alignment: .trailing)
+            HStack(spacing: 0) {
+                Text(trailing)
+                    .typeStyle(.label(9.5, tracking: 0.2))
+                    .foregroundStyle(Theme.inkMuted)
+                if let bookmark {
+                    BookmarkButton(bookmark: bookmark)
+                }
+            }
+            .frame(minWidth: sideWidth, alignment: .trailing)
         }
         .frame(height: 46)
         .overlay(alignment: .bottom) { Hairline() }
+    }
+}
+
+/// What the story page's bookmark needs: whether the story is saved, and what a tap does.
+struct StoryBookmark {
+    let isSaved: Bool
+    let toggle: () -> Void
+}
+
+/// A ribbon marker: an outline in brass while the story isn't saved, filled burgundy once it
+/// is, so the two read apart by shape as well as by colour. The tap target is 44 pt square.
+private struct BookmarkButton: View {
+    let bookmark: StoryBookmark
+    @ScaledMetric(relativeTo: .body) private var iconSize: CGFloat = 18
+
+    var body: some View {
+        Button(action: bookmark.toggle) {
+            Image(systemName: bookmark.isSaved ? "bookmark.fill" : "bookmark")
+                .font(.system(size: min(iconSize, 26), weight: .regular))
+                .foregroundStyle(bookmark.isSaved ? Theme.burgundy : Theme.brassText)
+                .frame(width: 44, height: 44)
+                .contentShape(Rectangle())
+        }
+        .buttonStyle(.plain)
+        // The glyph sits level with the page margin, not the edge of its tap target.
+        .padding(.trailing, -13)
+        .accessibilityLabel(bookmark.isSaved ? "Remove from Saved" : "Save story")
+        .sensoryFeedback(.impact(weight: .light), trigger: bookmark.isSaved)
     }
 }
 
