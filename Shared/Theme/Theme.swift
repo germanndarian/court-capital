@@ -23,6 +23,19 @@ enum Palette {
     static let tagCH = UIColor(day: 0x6F1F2C, night: 0xDEA2A9)
     static let tagEU = UIColor(day: 0x1E3A2C, night: 0xA4CAAD)
     static let toggleOn = UIColor(day: 0x1E3A2C, night: 0xA8884C)
+
+    /// The heatmap's seven steps, deep red through grey to deep green (see `HeatScale`).
+    static let heat: [UIColor] = [
+        UIColor(day: 0x7E1F2E, night: 0xA03447),
+        UIColor(day: 0xA9444F, night: 0x7C2B3A),
+        UIColor(day: 0xD2A0A2, night: 0x4A2A30),
+        UIColor(day: 0xC4BDAB, night: 0x38403A),
+        UIColor(day: 0xA3C4AC, night: 0x28483A),
+        UIColor(day: 0x3E7A58, night: 0x2F6B4A),
+        UIColor(day: 0x2A5A3E, night: 0x3E8A5E),
+    ]
+    /// Type on the heatmap's blocks: light on the deep steps by day, always cream by night.
+    static let heatLightText = UIColor(day: 0xF6EFDD, night: 0xECE3CD)
 }
 
 /// SwiftUI face of `Palette`, plus the mode-independent materials of the archive shelf.
@@ -46,6 +59,17 @@ enum Theme {
     static let tagCH = Color(uiColor: Palette.tagCH)
     static let tagEU = Color(uiColor: Palette.tagEU)
     static let toggleOn = Color(uiColor: Palette.toggleOn)
+
+    /// Block colour for a heatmap step, 0 (deep red) to 6 (deep green).
+    static func heat(_ step: Int) -> Color {
+        Color(uiColor: Palette.heat[min(max(step, 0), Palette.heat.count - 1)])
+    }
+
+    /// Type that reads on `heat(step)`.
+    static func heatText(_ step: Int) -> Color {
+        let deep = [0, 1, 5, 6].contains(step)
+        return Color(uiColor: deep ? Palette.heatLightText : Palette.ink)
+    }
 
     /// Toggle knob, the same cream in both modes.
     static let knob = Color(hex: 0xFBF7EE)

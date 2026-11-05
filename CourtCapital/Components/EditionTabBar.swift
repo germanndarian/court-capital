@@ -17,7 +17,7 @@ struct EditionTabBar: View {
                         Lozenge()
                             .opacity(isActive ? 1 : 0)
                         Text(tab.title)
-                            .typeStyle(.label(10))
+                            .typeStyle(.label(10, tracking: 0.12))
                             .foregroundStyle(isActive ? Theme.ink : Theme.inkMuted)
                             .lineLimit(1)
                             .minimumScaleFactor(0.6)
@@ -31,8 +31,8 @@ struct EditionTabBar: View {
                             }
                     }
                     .padding(.vertical, 9)
-                    .padding(.horizontal, 8)
-                    .frame(minWidth: 80)
+                    .padding(.horizontal, 2)
+                    .frame(minWidth: 44)
                     .contentShape(Rectangle())
                 }
                 .buttonStyle(.plain)
@@ -46,7 +46,7 @@ struct EditionTabBar: View {
         }
         // Like the system tab bar, the labels stop growing early; long-press shows them large.
         .dynamicTypeSize(...DynamicTypeSize.xLarge)
-        .padding(.horizontal, 26)
+        .padding(.horizontal, 10)
         .padding(.top, 4)
         .frame(minHeight: 50, alignment: .top)
         .background(PaperBackground().ignoresSafeArea(edges: .bottom))

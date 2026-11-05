@@ -32,6 +32,7 @@ Every weekday at about 03:52 Zürich time, a Claude scheduled task researches th
 | **The Docket** | The stories you follow over weeks, like a merger in talks or an IPO. Tap *Follow this story* at the end of a story, or long-press a headline, and choose the names to follow. Each file, bound in navy, green or burgundy leather, keeps the record of every edition that mentions them, earlier ones included. It shows four weeks of coverage, a countdown to a date you're watching and your notes, and marks new stories in burgundy. |
 | **Saved stories** | Tap the bookmark at the top of a story, or long-press a headline and choose *Save Story*. The Archive opens them on a *Saved stories* shelf, newest saved first, and each stays on the iPhone even after its edition is replaced. |
 | **The Archive** | Every published edition, bound by month as leather volumes on a shelf. Pull a volume to read its ledger; tap a row to open that edition. |
+| **Markets** | A heatmap of the 100 biggest US stocks, grouped by sector. Block area is market value and colour is the change on the day, from deep red through grey to deep green (−8% to +8%). Tap a block for its price, change and market value; tap a sector's name to focus on it. Pull down to refresh. |
 | **Settings** | The weekday morning notification and its delivery time, a break of any number of days, plus Day, Night or Automatic. |
 | **Widgets** | Small and medium on the Home Screen; rectangular, circular and inline on the Lock Screen. |
 
@@ -188,6 +189,12 @@ With a free Apple ID, the app stops opening 7 days after you last installed it. 
 
 The iShares MSCI ACWI UCITS ETF USD (Acc) (ISIN IE00B6R52259) isn't in the edition's data, so the app and the widget fetch it themselves: the US-dollar close on the London Stock Exchange (ISAC), from Yahoo Finance's public price data, with no key. Like the other markets it shows the last close before the edition and the change that day, and it's kept on the iPhone so it shows offline. If your Notion task ever adds a market whose name contains "ACWI", the app uses that figure instead. The listing is set in [`Shared/Data/MarketQuotes.swift`](Shared/Data/MarketQuotes.swift); `SSAC.SW` would show the Swiss listing in francs.
 
+### The Markets heatmap
+
+The Markets tab draws its own treemap, with no key, account or server. Prices come from Yahoo Finance's public spark endpoint, `https://query1.finance.yahoo.com/v8/finance/spark?symbols=A,B,…&range=5d&interval=1d`, 20 symbols a request (Yahoo refuses more), so five requests cover the 100 stocks. Each stock's change is its last daily close against the one before; while the New York session is open that is the live price, and the page says "During Wednesday's trading" instead of "At Wednesday's close". If spark returns nothing, the app asks the chart endpoint for each symbol instead. The last good set is kept on the iPhone, so the tab shows offline, and if Yahoo changes or blocks the data the app shows those figures with a quiet note and never fails on a malformed answer. This feature never touches Notion.
+
+The stocks and their sectors are in [`Shared/Heatmap/heatmap-universe.json`](Shared/Heatmap/heatmap-universe.json): ticker (Yahoo symbol), short name, sector and approximate shares outstanding in millions. Block area is shares times the latest price, so sizes follow the market. **Update the list by hand, roughly every quarter:** swap in newcomers to the 100 biggest, correct the share counts, and set `updated`. A ticker Yahoo doesn't know is simply left out.
+
 ### Taking a break
 
 **Settings → Take a break** pauses the edition for any number of days, up to 60. During the break there's no morning notification, Today says when the edition is back instead of warning that it's late, and the break ends on its own. The app can't stop your Claude scheduled task, so editions written during a break still appear in the archive. To stop the task itself, pause it in Claude.
@@ -234,17 +241,18 @@ Tap the bookmark at the top of a story, or long-press a headline in Today or in 
 CourtCapital/            the app
   App/                   entry point, navigation, appearance, deep links
   Data/                  SwiftData cache, edition store, the Docket, saved stories, background refresh
-  Screens/               Today, Story, Docket, Archive, Saved, Settings
+  Screens/               Today, Story, Docket, Archive, Saved, Markets, Settings
   Components/            masthead, markets strip, story rows, drop cap, tab bar
   Services/              morning notification, Docket reminders
 CourtCapitalWidgets/     Home Screen and Lock Screen widgets
 Shared/                  compiled into both targets
   Data/                  edition feed (Notion or the samples), Notion client and settings
+  Heatmap/               the Markets heatmap: stock list (JSON), Yahoo prices, treemap layout, colour scale
   Fixtures/              two sample editions in the Data block format
   Model/                 edition, edition calendar, archive
   Theme/                 colour tokens, type scale, paper grain, rules, ornaments
   Fonts/                 Playfair Display and Newsreader (SIL OFL)
-Tests/                   Notion client, feed, cache, Docket and saved-stories tests, against a fake Notion
+Tests/                   Notion client, feed, cache, Docket, saved-stories and heatmap tests, against fakes
 Config/                  build settings; your token goes in Secrets.xcconfig
 Tools/                   app icon and README artwork renderers
 ```
@@ -265,6 +273,7 @@ Tools/                   app icon and README artwork renderers
 | `courtcapital://today/markets` | The edition, at the markets strip |
 | `courtcapital://story/<id>` | A story in today's edition |
 | `courtcapital://docket` | The Docket |
+| `courtcapital://markets` | The Markets heatmap |
 
 ### Regenerating the artwork
 

@@ -18,6 +18,8 @@ struct RootView: View {
                     .tabContent(visible: model.tab == .docket)
                 ArchiveTab()
                     .tabContent(visible: model.tab == .archive)
+                MarketsView()
+                    .tabContent(visible: model.tab == .markets)
                 SettingsView()
                     .tabContent(visible: model.tab == .settings)
             }
