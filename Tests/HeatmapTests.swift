@@ -51,7 +51,7 @@ struct HeatmapFeedTests {
             await seen.add(url)
             return url.absoluteString.contains("AAPL") ? sparkFixture : Data("{}".utf8)
         }
-        let urls = await seen.urls
+        let urls = await seen.urls.filter { $0.absoluteString.contains("/spark") }
         #expect(urls.count == 3)
         #expect(urls.allSatisfy { $0.absoluteString.contains("/v8/finance/spark") })
         let result = try #require(snapshot)
@@ -70,6 +70,26 @@ struct HeatmapFeedTests {
         #expect(snapshot?.quotes.count == 2)
         let nothing = await HeatmapFeed.fetch(symbols: ["A", "B"]) { _ in nil }
         #expect(nothing == nil)
+    }
+
+    @Test("A failed batch falls back to the chart endpoint, then to the previous figures")
+    func partial() async throws {
+        let symbols = (0..<20).map { "A\($0)" } + ["B0", "B1"]
+        let sparkOK = Data(#"{"A0":{"timestamp":[1,2],"close":[10,11]}}"#.utf8)
+        let chart = Data(#"{"chart":{"result":[{"timestamp":[1,2],"indicators":{"quote":[{"close":[10,12]}]}}]}}"#.utf8)
+        let old = HeatQuote(price: 5, change: 1)
+        let previous = HeatmapSnapshot(quotes: ["B1": old, "A5": old], asOf: .distantPast, fetched: .distantPast)
+        let snapshot = await HeatmapFeed.fetch(symbols: symbols, previous: previous) { url in
+            let text = url.absoluteString
+            if text.contains("/spark") { return text.contains("A0") ? sparkOK : nil }
+            return text.contains("/chart/B0") ? chart : nil
+        }
+        let quotes = try #require(snapshot).quotes
+        #expect(quotes["A0"]?.price == 11)
+        #expect(quotes["B0"]?.price == 12)
+        #expect(quotes["B1"] == old)
+        #expect(quotes["A5"] == old)
+        #expect(quotes["A7"] == nil)
     }
 
     @Test("The snapshot survives the device cache")

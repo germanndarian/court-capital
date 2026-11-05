@@ -29,7 +29,7 @@ final class HeatmapStore {
         if !force, let snapshot, Date.now.timeIntervalSince(snapshot.fetched) < freshFor { return }
         isRefreshing = true
         defer { isRefreshing = false }
-        if let fresh = await HeatmapFeed.fetch(symbols: universe.symbols) {
+        if let fresh = await HeatmapFeed.fetch(symbols: universe.symbols, previous: snapshot) {
             snapshot = fresh
             problem = nil
             HeatmapFeed.store(fresh)

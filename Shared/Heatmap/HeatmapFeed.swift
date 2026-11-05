@@ -80,28 +80,32 @@ enum HeatmapFeed {
 
     // MARK: Fetching
 
-    /// Fetches every symbol in batches. If the spark endpoint gives nothing at all, tries the chart
-    /// endpoint symbol by symbol. Returns nil when nothing came back.
-    static func fetch(symbols: [String], now: Date = .now, load: @escaping Loader = liveLoad) async -> HeatmapSnapshot? {
+    /// Fetches every symbol in batches. Symbols in a batch that failed are tried on the chart endpoint
+    /// one by one, and any still missing keep their figure from `previous`, so a partial answer never
+    /// drops stocks from the map. Returns nil when nothing came back.
+    static func fetch(symbols: [String], previous: HeatmapSnapshot? = nil, now: Date = .now, load: @escaping Loader = liveLoad) async -> HeatmapSnapshot? {
         let batches = stride(from: 0, to: symbols.count, by: batchSize).map { Array(symbols[$0..<min($0 + batchSize, symbols.count)]) }
         var quotes: [String: HeatQuote] = [:]
         var asOf: Date?
+        var failed: [String] = []
 
-        await withTaskGroup(of: (quotes: [String: HeatQuote], asOf: Date?).self) { group in
+        await withTaskGroup(of: (batch: [String], quotes: [String: HeatQuote], asOf: Date?).self) { group in
             for batch in batches {
                 group.addTask {
-                    guard let url = sparkURL(batch), let data = await load(url) else { return ([:], nil) }
-                    return parseSpark(data)
+                    guard let url = sparkURL(batch), let data = await load(url) else { return (batch, [:], nil) }
+                    let parsed = parseSpark(data)
+                    return (batch, parsed.quotes, parsed.asOf)
                 }
             }
             for await part in group {
+                if part.quotes.isEmpty { failed += part.batch }
                 quotes.merge(part.quotes) { $1 }
                 if let date = part.asOf, date > (asOf ?? .distantPast) { asOf = date }
             }
         }
 
-        if quotes.isEmpty {
-            for chunk in stride(from: 0, to: symbols.count, by: 10).map({ Array(symbols[$0..<min($0 + 10, symbols.count)]) }) {
+        if !failed.isEmpty {
+            for chunk in stride(from: 0, to: failed.count, by: 10).map({ Array(failed[$0..<min($0 + 10, failed.count)]) }) {
                 await withTaskGroup(of: (String, HeatQuote, Date?)?.self) { group in
                     for symbol in chunk {
                         group.addTask {
@@ -115,6 +119,11 @@ enum HeatmapFeed {
                         if let date = part.2, date > (asOf ?? .distantPast) { asOf = date }
                     }
                 }
+            }
+        }
+        if let previous {
+            for symbol in symbols where quotes[symbol] == nil {
+                if let old = previous.quotes[symbol] { quotes[symbol] = old }
             }
         }
         guard !quotes.isEmpty else { return nil }
