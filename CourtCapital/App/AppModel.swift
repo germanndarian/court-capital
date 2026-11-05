@@ -2,13 +2,14 @@ import Observation
 import SwiftUI
 
 enum AppTab: Hashable, CaseIterable {
-    case today, docket, archive, settings
+    case today, docket, archive, markets, settings
 
     var title: String {
         switch self {
         case .today: "Today"
         case .docket: "Docket"
         case .archive: "Archive"
+        case .markets: "Markets"
         case .settings: "Settings"
         }
     }
@@ -75,7 +76,7 @@ final class AppModel {
             default: false
             }
         case .docket: if case .story = docketPath.last { true } else { false }
-        case .settings: false
+        case .markets, .settings: false
         }
     }
 
@@ -138,13 +139,15 @@ final class AppModel {
     }
 
     /// `courtcapital://today`, `courtcapital://today/markets`, `courtcapital://story/<id>`,
-    /// `courtcapital://docket`.
+    /// `courtcapital://docket`, `courtcapital://markets`.
     func handle(_ url: URL) {
         guard url.scheme == "courtcapital" else { return }
         switch url.host() {
         case "docket":
             tab = .docket
             docketPath = []
+        case "markets":
+            tab = .markets
         case "story":
             if let id = url.pathComponents.dropFirst().first, store.latest?.story(id: id) != nil {
                 openToday(story: id)

@@ -1,0 +1,605 @@
+{
+ "updated": "2026-11",
+ "stocks": [
+  {
+   "ticker": "AAPL",
+   "name": "Apple",
+   "sector": "Technology",
+   "sharesMillions": 14800
+  },
+  {
+   "ticker": "MSFT",
+   "name": "Microsoft",
+   "sector": "Technology",
+   "sharesMillions": 7430
+  },
+  {
+   "ticker": "NVDA",
+   "name": "Nvidia",
+   "sector": "Technology",
+   "sharesMillions": 24300
+  },
+  {
+   "ticker": "AVGO",
+   "name": "Broadcom",
+   "sector": "Technology",
+   "sharesMillions": 4700
+  },
+  {
+   "ticker": "ORCL",
+   "name": "Oracle",
+   "sector": "Technology",
+   "sharesMillions": 2850
+  },
+  {
+   "ticker": "CRM",
+   "name": "Salesforce",
+   "sector": "Technology",
+   "sharesMillions": 960
+  },
+  {
+   "ticker": "AMD",
+   "name": "AMD",
+   "sector": "Technology",
+   "sharesMillions": 1620
+  },
+  {
+   "ticker": "CSCO",
+   "name": "Cisco",
+   "sector": "Technology",
+   "sharesMillions": 3950
+  },
+  {
+   "ticker": "ADBE",
+   "name": "Adobe",
+   "sector": "Technology",
+   "sharesMillions": 425
+  },
+  {
+   "ticker": "IBM",
+   "name": "IBM",
+   "sector": "Technology",
+   "sharesMillions": 930
+  },
+  {
+   "ticker": "NOW",
+   "name": "ServiceNow",
+   "sector": "Technology",
+   "sharesMillions": 207
+  },
+  {
+   "ticker": "QCOM",
+   "name": "Qualcomm",
+   "sector": "Technology",
+   "sharesMillions": 1090
+  },
+  {
+   "ticker": "TXN",
+   "name": "Texas Instruments",
+   "sector": "Technology",
+   "sharesMillions": 910
+  },
+  {
+   "ticker": "INTU",
+   "name": "Intuit",
+   "sector": "Technology",
+   "sharesMillions": 280
+  },
+  {
+   "ticker": "AMAT",
+   "name": "Applied Materials",
+   "sector": "Technology",
+   "sharesMillions": 800
+  },
+  {
+   "ticker": "MU",
+   "name": "Micron",
+   "sector": "Technology",
+   "sharesMillions": 1120
+  },
+  {
+   "ticker": "PLTR",
+   "name": "Palantir",
+   "sector": "Technology",
+   "sharesMillions": 2370
+  },
+  {
+   "ticker": "LRCX",
+   "name": "Lam Research",
+   "sector": "Technology",
+   "sharesMillions": 1270
+  },
+  {
+   "ticker": "KLAC",
+   "name": "KLA",
+   "sector": "Technology",
+   "sharesMillions": 132
+  },
+  {
+   "ticker": "ANET",
+   "name": "Arista Networks",
+   "sector": "Technology",
+   "sharesMillions": 1260
+  },
+  {
+   "ticker": "PANW",
+   "name": "Palo Alto Networks",
+   "sector": "Technology",
+   "sharesMillions": 660
+  },
+  {
+   "ticker": "INTC",
+   "name": "Intel",
+   "sector": "Technology",
+   "sharesMillions": 4370
+  },
+  {
+   "ticker": "ADI",
+   "name": "Analog Devices",
+   "sector": "Technology",
+   "sharesMillions": 490
+  },
+  {
+   "ticker": "APH",
+   "name": "Amphenol",
+   "sector": "Technology",
+   "sharesMillions": 1220
+  },
+  {
+   "ticker": "DELL",
+   "name": "Dell",
+   "sector": "Technology",
+   "sharesMillions": 680
+  },
+  {
+   "ticker": "ACN",
+   "name": "Accenture",
+   "sector": "Technology",
+   "sharesMillions": 625
+  },
+  {
+   "ticker": "GOOGL",
+   "name": "Alphabet",
+   "sector": "Media & Telecom",
+   "sharesMillions": 12100
+  },
+  {
+   "ticker": "META",
+   "name": "Meta",
+   "sector": "Media & Telecom",
+   "sharesMillions": 2520
+  },
+  {
+   "ticker": "NFLX",
+   "name": "Netflix",
+   "sector": "Media & Telecom",
+   "sharesMillions": 4250
+  },
+  {
+   "ticker": "DIS",
+   "name": "Disney",
+   "sector": "Media & Telecom",
+   "sharesMillions": 1800
+  },
+  {
+   "ticker": "CMCSA",
+   "name": "Comcast",
+   "sector": "Media & Telecom",
+   "sharesMillions": 3700
+  },
+  {
+   "ticker": "TMUS",
+   "name": "T-Mobile",
+   "sector": "Media & Telecom",
+   "sharesMillions": 1140
+  },
+  {
+   "ticker": "VZ",
+   "name": "Verizon",
+   "sector": "Media & Telecom",
+   "sharesMillions": 4210
+  },
+  {
+   "ticker": "T",
+   "name": "AT&T",
+   "sector": "Media & Telecom",
+   "sharesMillions": 7170
+  },
+  {
+   "ticker": "AMZN",
+   "name": "Amazon",
+   "sector": "Retail & Leisure",
+   "sharesMillions": 10700
+  },
+  {
+   "ticker": "TSLA",
+   "name": "Tesla",
+   "sector": "Retail & Leisure",
+   "sharesMillions": 3220
+  },
+  {
+   "ticker": "HD",
+   "name": "Home Depot",
+   "sector": "Retail & Leisure",
+   "sharesMillions": 995
+  },
+  {
+   "ticker": "MCD",
+   "name": "McDonald's",
+   "sector": "Retail & Leisure",
+   "sharesMillions": 715
+  },
+  {
+   "ticker": "BKNG",
+   "name": "Booking",
+   "sector": "Retail & Leisure",
+   "sharesMillions": 33
+  },
+  {
+   "ticker": "LOW",
+   "name": "Lowe's",
+   "sector": "Retail & Leisure",
+   "sharesMillions": 560
+  },
+  {
+   "ticker": "TJX",
+   "name": "TJX",
+   "sector": "Retail & Leisure",
+   "sharesMillions": 1115
+  },
+  {
+   "ticker": "SBUX",
+   "name": "Starbucks",
+   "sector": "Retail & Leisure",
+   "sharesMillions": 1135
+  },
+  {
+   "ticker": "NKE",
+   "name": "Nike",
+   "sector": "Retail & Leisure",
+   "sharesMillions": 1480
+  },
+  {
+   "ticker": "CMG",
+   "name": "Chipotle",
+   "sector": "Retail & Leisure",
+   "sharesMillions": 1340
+  },
+  {
+   "ticker": "GM",
+   "name": "General Motors",
+   "sector": "Retail & Leisure",
+   "sharesMillions": 960
+  },
+  {
+   "ticker": "F",
+   "name": "Ford",
+   "sector": "Retail & Leisure",
+   "sharesMillions": 3980
+  },
+  {
+   "ticker": "WMT",
+   "name": "Walmart",
+   "sector": "Consumer Goods",
+   "sharesMillions": 8000
+  },
+  {
+   "ticker": "COST",
+   "name": "Costco",
+   "sector": "Consumer Goods",
+   "sharesMillions": 443
+  },
+  {
+   "ticker": "PG",
+   "name": "Procter & Gamble",
+   "sector": "Consumer Goods",
+   "sharesMillions": 2340
+  },
+  {
+   "ticker": "KO",
+   "name": "Coca-Cola",
+   "sector": "Consumer Goods",
+   "sharesMillions": 4300
+  },
+  {
+   "ticker": "PEP",
+   "name": "PepsiCo",
+   "sector": "Consumer Goods",
+   "sharesMillions": 1370
+  },
+  {
+   "ticker": "PM",
+   "name": "Philip Morris",
+   "sector": "Consumer Goods",
+   "sharesMillions": 1555
+  },
+  {
+   "ticker": "LLY",
+   "name": "Eli Lilly",
+   "sector": "Health",
+   "sharesMillions": 947
+  },
+  {
+   "ticker": "JNJ",
+   "name": "Johnson & Johnson",
+   "sector": "Health",
+   "sharesMillions": 2410
+  },
+  {
+   "ticker": "ABBV",
+   "name": "AbbVie",
+   "sector": "Health",
+   "sharesMillions": 1770
+  },
+  {
+   "ticker": "UNH",
+   "name": "UnitedHealth",
+   "sector": "Health",
+   "sharesMillions": 905
+  },
+  {
+   "ticker": "MRK",
+   "name": "Merck",
+   "sector": "Health",
+   "sharesMillions": 2500
+  },
+  {
+   "ticker": "TMO",
+   "name": "Thermo Fisher",
+   "sector": "Health",
+   "sharesMillions": 377
+  },
+  {
+   "ticker": "ABT",
+   "name": "Abbott",
+   "sector": "Health",
+   "sharesMillions": 1740
+  },
+  {
+   "ticker": "ISRG",
+   "name": "Intuitive Surgical",
+   "sector": "Health",
+   "sharesMillions": 358
+  },
+  {
+   "ticker": "AMGN",
+   "name": "Amgen",
+   "sector": "Health",
+   "sharesMillions": 538
+  },
+  {
+   "ticker": "PFE",
+   "name": "Pfizer",
+   "sector": "Health",
+   "sharesMillions": 5680
+  },
+  {
+   "ticker": "DHR",
+   "name": "Danaher",
+   "sector": "Health",
+   "sharesMillions": 715
+  },
+  {
+   "ticker": "BSX",
+   "name": "Boston Scientific",
+   "sector": "Health",
+   "sharesMillions": 1480
+  },
+  {
+   "ticker": "GILD",
+   "name": "Gilead",
+   "sector": "Health",
+   "sharesMillions": 1245
+  },
+  {
+   "ticker": "SYK",
+   "name": "Stryker",
+   "sector": "Health",
+   "sharesMillions": 382
+  },
+  {
+   "ticker": "VRTX",
+   "name": "Vertex",
+   "sector": "Health",
+   "sharesMillions": 257
+  },
+  {
+   "ticker": "MDT",
+   "name": "Medtronic",
+   "sector": "Health",
+   "sharesMillions": 1283
+  },
+  {
+   "ticker": "BMY",
+   "name": "Bristol Myers Squibb",
+   "sector": "Health",
+   "sharesMillions": 2030
+  },
+  {
+   "ticker": "CVS",
+   "name": "CVS Health",
+   "sector": "Health",
+   "sharesMillions": 1270
+  },
+  {
+   "ticker": "BRK-B",
+   "name": "Berkshire Hathaway",
+   "sector": "Finance",
+   "sharesMillions": 2160
+  },
+  {
+   "ticker": "JPM",
+   "name": "JPMorgan Chase",
+   "sector": "Finance",
+   "sharesMillions": 2770
+  },
+  {
+   "ticker": "V",
+   "name": "Visa",
+   "sector": "Finance",
+   "sharesMillions": 1930
+  },
+  {
+   "ticker": "MA",
+   "name": "Mastercard",
+   "sector": "Finance",
+   "sharesMillions": 910
+  },
+  {
+   "ticker": "BAC",
+   "name": "Bank of America",
+   "sector": "Finance",
+   "sharesMillions": 7500
+  },
+  {
+   "ticker": "WFC",
+   "name": "Wells Fargo",
+   "sector": "Finance",
+   "sharesMillions": 3250
+  },
+  {
+   "ticker": "GS",
+   "name": "Goldman Sachs",
+   "sector": "Finance",
+   "sharesMillions": 308
+  },
+  {
+   "ticker": "MS",
+   "name": "Morgan Stanley",
+   "sector": "Finance",
+   "sharesMillions": 1600
+  },
+  {
+   "ticker": "AXP",
+   "name": "American Express",
+   "sector": "Finance",
+   "sharesMillions": 700
+  },
+  {
+   "ticker": "C",
+   "name": "Citigroup",
+   "sector": "Finance",
+   "sharesMillions": 1860
+  },
+  {
+   "ticker": "BLK",
+   "name": "BlackRock",
+   "sector": "Finance",
+   "sharesMillions": 155
+  },
+  {
+   "ticker": "SCHW",
+   "name": "Charles Schwab",
+   "sector": "Finance",
+   "sharesMillions": 1800
+  },
+  {
+   "ticker": "XOM",
+   "name": "Exxon Mobil",
+   "sector": "Energy",
+   "sharesMillions": 4300
+  },
+  {
+   "ticker": "CVX",
+   "name": "Chevron",
+   "sector": "Energy",
+   "sharesMillions": 1950
+  },
+  {
+   "ticker": "COP",
+   "name": "ConocoPhillips",
+   "sector": "Energy",
+   "sharesMillions": 1250
+  },
+  {
+   "ticker": "GE",
+   "name": "GE Aerospace",
+   "sector": "Industry",
+   "sharesMillions": 1060
+  },
+  {
+   "ticker": "CAT",
+   "name": "Caterpillar",
+   "sector": "Industry",
+   "sharesMillions": 468
+  },
+  {
+   "ticker": "RTX",
+   "name": "RTX",
+   "sector": "Industry",
+   "sharesMillions": 1340
+  },
+  {
+   "ticker": "HON",
+   "name": "Honeywell",
+   "sector": "Industry",
+   "sharesMillions": 640
+  },
+  {
+   "ticker": "UNP",
+   "name": "Union Pacific",
+   "sector": "Industry",
+   "sharesMillions": 593
+  },
+  {
+   "ticker": "BA",
+   "name": "Boeing",
+   "sector": "Industry",
+   "sharesMillions": 760
+  },
+  {
+   "ticker": "LMT",
+   "name": "Lockheed Martin",
+   "sector": "Industry",
+   "sharesMillions": 235
+  },
+  {
+   "ticker": "ETN",
+   "name": "Eaton",
+   "sector": "Industry",
+   "sharesMillions": 390
+  },
+  {
+   "ticker": "GEV",
+   "name": "GE Vernova",
+   "sector": "Industry",
+   "sharesMillions": 272
+  },
+  {
+   "ticker": "WM",
+   "name": "Waste Management",
+   "sector": "Industry",
+   "sharesMillions": 403
+  },
+  {
+   "ticker": "NEE",
+   "name": "NextEra Energy",
+   "sector": "Utilities",
+   "sharesMillions": 2060
+  },
+  {
+   "ticker": "SO",
+   "name": "Southern Company",
+   "sector": "Utilities",
+   "sharesMillions": 1100
+  },
+  {
+   "ticker": "LIN",
+   "name": "Linde",
+   "sector": "Materials & Property",
+   "sharesMillions": 470
+  },
+  {
+   "ticker": "AMT",
+   "name": "American Tower",
+   "sector": "Materials & Property",
+   "sharesMillions": 468
+  },
+  {
+   "ticker": "PLD",
+   "name": "Prologis",
+   "sector": "Materials & Property",
+   "sharesMillions": 928
+  }
+ ]
+}

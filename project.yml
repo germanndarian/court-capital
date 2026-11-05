@@ -104,6 +104,7 @@ targets:
       - path: Shared/Data
       - path: Shared/Model
       - path: Shared/Fixtures
+      - path: Shared/Heatmap
       - path: CourtCapital/Data/EditionStore.swift
       - path: CourtCapital/Data/EditionCache.swift
       - path: CourtCapital/Data/Docket.swift
